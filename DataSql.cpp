@@ -5,7 +5,7 @@
 #include <QStandardPaths>
 #include <QSqlRecord>
 #include <QSqlError>
-
+//8.148.4.26:8090
 DataSql::DataSql(QObject *parent) : QObject(parent)
 {
     // 设置数据库类型为SQLite

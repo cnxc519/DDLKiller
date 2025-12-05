@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #set(ANDROID_APPLICATION_NAME "DDLkiller")
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Sql)
+find_package(Qt6 REQUIRED COMPONENTS Quick Sql WebSockets)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -27,6 +27,13 @@ qt_add_qml_module(appDDLonline
         QML_FILES MaskCalender.qml
         SOURCES jsonGenerator.h
         SOURCES jsonGenerator.cpp
+        SOURCES database.h
+        SOURCES database.cpp
+        SOURCES json.cpp
+        SOURCES websocketclient.h
+        SOURCES json.h
+        SOURCES websocketclient.cpp
+        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
         #RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
 )
 
@@ -45,7 +52,14 @@ target_link_libraries(appDDLonline
     PRIVATE Qt6::Quick
     Qt6::Sql
     Qt6::Qml
+    Qt6::WebSockets
 )
+
+# if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/android)
+#     set_target_properties(appDDLonline PROPERTIES
+#        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+#     )
+# endif()
 
 include(GNUInstallDirs)
 install(TARGETS appDDLonline
@@ -53,3 +67,7 @@ install(TARGETS appDDLonline
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+# if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/android)
+#     include("D:/SDK/Android/android_openssl/android_openssl.cmake")
+#     add_android_openssl_libraries(appDDLonline)
+# endif()

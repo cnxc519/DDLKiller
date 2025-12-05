@@ -2,6 +2,68 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+//TODO
+//1.进入客户端在main.cpp自动连接,并在连接时执行全量更新,执行成功后所有offline设置为0,连接失败则websocket.connected设为false
+//2.每次添加/删除/修改时,先进行一次连接尝试
+//在一些情况下是客户端发送信息,在一些情况下是服务器端发送信息
+//客户端向服务器发送:1.我上线了/我需要执行全量更新了
+//                  ->服务器发送自己端所有数据,向访问设备
+//                  ->访问设备更新为结合后的在线数据,转化为json格式全部打包给服务器
+//                  ->服务器器接收全量更新逻辑
+//                  ->服务器向所有设备发送最新数据,所有设备重载数据
+//                2.我添加/删除/修改了什么,type为modification
+//                  ->服务器接受数据,并把原样json直接广播给其他所有在线设备
+//                  ->服务器端自己也执行一次
+//服务器端向客户端发送:1.只有代表操作(full_update,modification)的json格式
+//                  2.这是发送给刚上线设备的,代表要进行特殊full_update后还要返回给服务器
+//离线相关:1.离线状态点击全量更新显示error
+//        2.离线状态进行add/delete/modify,会自动生成一个全局储存的json格式,随后尝试connect,在onconnected/onerror后进行对储存的json进行process
+//          ->我们必须保证这不是"登录/full_update"的connect结果,或许我们可以存储一个自动为不执行的json格式,比如type=hold,每次json处理成功后转为hold的type,只有在需要时短暂转化为所需保存的json
+//
+//全局待执行json,默认为hold,每次用完改成hold
+//
+//我们需要的功能函数:尝试连接->发送connect>连接成功->接受full_update_mix->执行processjson->update结束后发信号
+//                                           ->一个函数接受信号->该函数将目前所有数据库内容转为json发送给服务器
+//                                    ->连接失败,isconnected=false(实际上用不到这个值)
+//一接收到消息就processjson,后面逻辑都在processjson中处理
+//收到的消息是add,delete,modify,full_update_blanket,直接执行,没有任何问题
+//收到的消息是full_update_mix,执行原fullupdate函数,finish后将自己全部数据库按照特定json格式发送
+//接受消息的所有可能如上
+//
+//
+//自己add/delete/modify逻辑
+//生成对应json,保存在c++->尝试连接->发送connect->onconnected->生成的json发给服务器->m_isconnected作为最新在线离线标识全局可访,用它执行processjson
+//                                         ->onerror                        /^^^
+//
+//点击全量更新->连接失败并不会有提示,除非想每次离线使用打开应用就弹出提示词
+//
+//modify要改到ddlthird那,并且输入ui应该优化
+//当执行modify操作时,应该一定有last_modified为generateuuid
+//执行add操作时,last_modified和uuid默认为generateuuid
+//
+//具体到我需要写的函数与调用流程:
+//1.创建static的json_to_run,默认为{"type":"hold"},直接""的QString就可以,因为处理json文本的时候会return这种情况
+//2.在onconnected后和onerror后都执行databasemanager.processjson(json_to_run)
+//3.ddlthird长按可modify
+//4.add操作时生成uuid和last_modified
+//5.记得处理一个{"type":"response"}
+//6.full_update_noresponce:clearall并覆盖,按照对话中原来的那个函数就可以
+//7.full_update之后要执行向服务器发送消息
+//8.一个函数,将目前的数据库生成为json格式,准备发送给服务器
+//9.每次接受服务器消息都直接processjson,不用管其他的
+//10.processjson需要把接受的消息due_date转化为year,month,day存储
+//11.准备add/delete/modify->先生成json格式json_to_run->执行connect->json_to_run初始化
+//12.结合json解析和上线两段代码
+//13.ddlthird输入UI优化,修改时弹出输入的UI,但是按钮是确认修改
+//14.ddlthird中把add和delete的json格式生成并保存
+//15.手动改isonline全可以删去
+//16.进入即json_to_run变成request并connect
+
+//12.4
+//1.genneratejson里面对jsontorun复制
+//2.每次执行完都执行jsontorun=""
+//3.groupmodel整合,注意日期提取
+
 ApplicationWindow {
     visible: true
     width: 400
@@ -25,55 +87,96 @@ ApplicationWindow {
     property int dateee:cDate.getDate()
 
     property bool isModifying:false
-    property int modifyid
+    property string modifyid
 
     // 连接数据库信号
-    Connections {
-        target: dataSql
+    // Connections {
+    //     target: dataSql
 
-        function onDatabaseInitialized(success) {
-            dbInitialized = success
-            if (success) {
-                dbStatus = "Database initialized successfully"
-                refreshData()
-            } else {
-                dbStatus = "Database initialization failed"
-            }
-        }
+    //     // function onDatabaseInitialized(success) {
+    //     //     dbInitialized = success
+    //     //     if (success) {
+    //     //         dbStatus = "Database initialized successfully"
+    //     //         refreshData()
+    //     //     } else {
+    //     //         dbStatus = "Database initialization failed"
+    //     //     }
+    //     // }
 
-        function onQueryExecuted(success) {
-            if (success) {
-                dbStatus = "Query executed successfully"
-            }
-        }
+    //     function onQueryExecuted(success) {
+    //         if (success) {
+    //             dbStatus = "Query executed successfully"
+    //         }
+    //     }
 
-        function onErrorOccurred(errorMessage) {
-            dbStatus = "Error: " + errorMessage
-        }
+    //     function onErrorOccurred(errorMessage) {
+    //         dbStatus = "Error: " + errorMessage
+    //     }
 
-        function onQueryHangShu(hangshuu){
-            hangshu=hangshuu
-            dbStatus=hangshu
+    //     function onQueryHangShu(hangshuu){
+    //         hangshu=hangshuu
+    //         dbStatus=hangshu
+    //     }
+    // }
+
+
+    // function refreshData() {
+    //     console.log("Refreshing data...");
+    //     var items = databaseManager.getTodoItems();
+    //     if (items && items.length >= 0) {
+    //         // 清空现有模型
+    //         todoItemsModel.clear();
+
+    //         // 将数据添加到 ListModel
+    //         for (var i = 0; i < items.length; i++) {
+    //             todoItemsModel.append(items[i]);
+    //         }
+
+    //         console.log("Loaded", todoItemsModel.count, "items");
+    //     } else {
+    //         console.log("Failed to load items");
+    //     }
+    // }
+
+    Button{
+        text:"全量更新"
+        z:10000000
+        onClicked: {
+            //websocket.connectToServer("ws://8.148.4.26:8090");
+            websocket.sendMessage("{\"type\": \"full_update_request\"}");
+
+            // websocket.json_to_run=databaseManager.getTodoItemsAsJsonString();
+            // console.log(websocket.json_to_run)
+            // websocket.connect();
         }
     }
 
     // 刷新数据函数
     function refreshData() {
-        if (!dbInitialized) {
-            dbStatus = "Cannot refresh data: database not initialized"
-            return
-        }
+        // if (!dbInitialized) {
+        //     dbStatus = "Cannot refresh data: database not initialized"
+        //     return
+        // }
 
-        if (!dataSql.executeQuery("SELECT * FROM users ORDER BY year*2000+month*100+day")) {
-            return
-        }
+        // if (!dataSql.executeQuery("SELECT * FROM users ORDER BY due_date")) {
+        //     return
+        // }
 
         groupModels[0].clear()
         groupModels[1].clear()
         groupModels[2].clear()
-        var results = dataSql.getQueryResults()
+        //var results = dataSql.getQueryResults()
+
+        var results = databaseManager.getTodoItems();
+
         for (var i = 0; i < results.length; i++) {
-            groupModels[date.getmodelindex(results[i].year,results[i].month,results[i].day)].append(results[i])//20250
+
+            var due_time=parseDate(results[i].due_date)
+            console.log("年:", due_time.year);   // 2025
+            console.log("月:", due_time.month);  // 7
+            console.log("日:", due_time.day);
+
+            groupModels[date.getmodelindex(due_time.year,due_time.month,due_time.day)].append(results[i])//20250
             // var l=results[i].month
             // print(1)
         }
@@ -93,55 +196,148 @@ ApplicationWindow {
         warning.visible=0
     }
 
-    // 添加新项目函数
-    function addUser() {
-        if (!dbInitialized) {
-            dbStatus = "Cannot add user: database not initialized"//
-            return
-        }
+    Component.onCompleted: {
+        console.log("Application loaded");
+        refreshData();
 
-        var name = namefield.text
-        var year = yearrr//parseInt(yearfield.text)
-        var month = monthhh//parseInt(monthfield.text)
-        var day = dateee//parseInt(dateefield.text)
+        // 连接信号
+        databaseManager.operationCompleted.connect(function(operation, success, message) {
+            //statusText.text = message;
+            if (success) {
+                refreshData();
+            }
+        });
 
-        if (name === "" || month === NaN|| day === NaN || year===NaN) {
-            dbStatus = "Name and date are required"
-            return
-        }
+        // databaseManager.isOnlineChanged.connect(function(online) {
+        //     onlineStatusText.text = online ? "Online" : "Offline";
+        //     onlineStatusIndicator.color = online ? "green" : "red";
+        //     refreshData();
+        // });
 
-        var query = "INSERT INTO users (name,year, month,day) VALUES (?,?,?,?)"
-        var params = [name,year,month,day]//isNaN(month) ? null : moth
+        jsonProcessor.jsonError.connect(function(errorMessage) {
+            //statusText.text = "JSON Error: " + errorMessage;
+        });
 
-        if (!dataSql.executeQueryWithParams(query, params)) {
-            return
-        }
-        //sortData()
-        refreshData()
-        // 清空输入字段
-        //yearfield.text=""
-        //namefield.text = ""
-        //monthfield.text = ""
-        //dateefield.text=""
-
-
-        //currentDate和selectedDate变为new Date()
-
-        dbStatus = "User added successfully"
+        // 加载一个默认示例
+        loadExample("full_update");
     }
+
+    Connections{
+        target:websocket
+
+        function onRunJson(jtr){
+            var jsonText = jtr;
+            if (jsonText.trim() === "") {
+                statusText.text = "Please enter JSON data";
+                return;
+            }
+
+            console.log("Processing JSON...");
+            var parseResult = jsonProcessor.parseAndProcessJson(jsonText);
+
+            if (parseResult.success) {
+                console.log("JSON parsed successfully, operation:", parseResult.operation);
+                databaseManager.processJsonResult(parseResult);
+                websocket.json_to_run="";
+            }
+            else {
+                statusText.text = "JSON Error: " + parseResult.error;
+                websocket.json_to_run="";
+            }
+        }
+
+        function onMessageReceived(jtr){
+            var jsonText = jtr;
+            if (jsonText.trim() === "") {
+                statusText.text = "Please enter JSON data";
+                return;
+            }
+
+            console.log("Processing JSON...");
+            var parseResult = jsonProcessor.parseAndProcessJson(jsonText);
+
+            if (parseResult.success) {
+                console.log("JSON parsed successfully, operation:", parseResult.operation);
+                databaseManager.processJsonResult(parseResult);
+                websocket.json_to_run="";
+            }
+            else {
+                statusText.text = "JSON Error: " + parseResult.error;
+                websocket.json_to_run="";
+            }
+        }
+    }
+
+    // function processJson() {
+    //     var jsonText = jsonTextArea.text;
+    //     if (jsonText.trim() === "") {
+    //         statusText.text = "Please enter JSON data";
+    //         return;
+    //     }
+
+    //     console.log("Processing JSON...");
+    //     var parseResult = jsonProcessor.parseAndProcessJson(jsonText);
+
+    //     if (parseResult.success) {
+    //         console.log("JSON parsed successfully, operation:", parseResult.operation);
+    //         databaseManager.processJsonResult(parseResult);
+    //     } else {
+    //         statusText.text = "JSON Error: " + parseResult.error;
+    //     }
+    // }
+
+
+
+    // 添加新项目函数
+    // function addUser() {
+    //     if (!dbInitialized) {
+    //         dbStatus = "Cannot add user: database not initialized"//
+    //         return
+    //     }
+
+    //     var name = namefield.text
+    //     var year = yearrr//parseInt(yearfield.text)
+    //     var month = monthhh//parseInt(monthfield.text)
+    //     var day = dateee//parseInt(dateefield.text)
+
+    //     if (name === "" || month === NaN|| day === NaN || year===NaN) {
+    //         dbStatus = "Name and date are required"
+    //         return
+    //     }
+
+    //     var query = "INSERT INTO users (name,year, month,day) VALUES (?,?,?,?)"
+    //     var params = [name,year,month,day]//isNaN(month) ? null : moth
+
+    //     if (!dataSql.executeQueryWithParams(query, params)) {
+    //         return
+    //     }
+    //     //sortData()
+    //     refreshData()
+    //     // 清空输入字段
+    //     //yearfield.text=""
+    //     //namefield.text = ""
+    //     //monthfield.text = ""
+    //     //dateefield.text=""
+
+
+    //     //currentDate和selectedDate变为new Date()
+
+    //     dbStatus = "User added successfully"
+    //     return
+    // }
 
     // 删除项目函数
-    function deleteData(idd){
+    // function deleteData(idd){
 
-        var query = "DELETE FROM users WHERE id=?"
-        var params=[idd]
-        if (!dataSql.executeQueryWithParams(query, params)) {
-            return
-        }
-        refreshData()
-        dbStatus = "User deleted successfully"
-        return
-    }
+    //     var query = "DELETE FROM users WHERE id=?"
+    //     var params=[idd]
+    //     if (!dataSql.executeQueryWithParams(query, params)) {
+    //         return
+    //     }
+    //     refreshData()
+    //     dbStatus = "User deleted successfully"
+    //     return
+    // }
 
     //添加新事项界面,待美化界面,将日历加入,日历加入已完成
     //点add就退出界面逻辑不对,应该是判断not null,还应该有个取消按钮是直接退出
@@ -480,8 +676,8 @@ ApplicationWindow {
                                             z:1
                                             anchors.fill:parent
                                             onClicked: {
-                                                jsonGenerator.generateDeleteJson(model.id);
-                                                deleteData(model.id)
+                                                jsonGenerator.generateDeleteJson(model.uuid);
+                                                //deleteData(model.uuid)
                                             }
                                         }
                                     }
@@ -490,7 +686,7 @@ ApplicationWindow {
                                     Text {
                                         Layout.fillWidth: true
                                         Layout.alignment: Qt.AlignVCenter
-                                        text: model.name
+                                        text: model.title
                                         elide: Text.ElideRight
                                         font.pixelSize: 14
                                         font.bold: true
@@ -501,7 +697,9 @@ ApplicationWindow {
                                     Text {
                                         Layout.alignment: Qt.AlignVCenter
                                         Layout.preferredWidth: Math.min(implicitWidth, 100)
-                                        text: date.getExplicitDate(model.year,model.month,model.day)//"explicitdate"
+
+
+                                        text: date.getExplicitDate(parseDate(model.due_date).year,parseDate(model.due_date).month,parseDate(model.due_date).day)//"explicitdate"
                                         horizontalAlignment: Text.AlignRight//20250
                                         font.pixelSize: 12
                                         color: "#666666"
@@ -526,7 +724,7 @@ ApplicationWindow {
                                         // 第一行文本
                                         Text {
                                             width: parent.width
-                                            text: `${model.year}-${model.month}-${model.day}`//最好用dateformat那种形式yyyy-MM-dd
+                                            text: `${parseDate(model.due_date).year}-${parseDate(model.due_date).month}-${parseDate(model.due_date).day}`//最好用dateformat那种形式yyyy-MM-dd
                                             font.pixelSize: 11
                                             color: "#666666"
                                             elide: Text.ElideRight
@@ -556,8 +754,8 @@ ApplicationWindow {
                                     onClicked: console.log("点击了:", name)
                                     onPressAndHold: {
                                         isModifying=1
-                                        modifyid=model.id
-                                        namefield.text=model.name
+                                        modifyid=model.uuid
+                                        namefield.text=model.title
                                         tianruxinxi.visible=1
                                         console.log( "方法1: 长按触发成功!")
                                     }
@@ -609,6 +807,18 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    function parseDate(dateString) {
+        var parts = dateString.split("-");
+        if (parts.length === 3||parts.length === 4) {
+            return {
+                year: parseInt(parts[0]),
+                month: parseInt(parts[1]),
+                day: parseInt(parts[2])
+            };
+        }
+        return { year: 0, month: 0, day: 0 };
     }
 }
 
