@@ -53,9 +53,13 @@ void WebSocketClient::sendMessage(const QString &message)
 
 void WebSocketClient::onConnected()
 {
+    //每次重连都进行full_update
+    //qDebug()<<json_to_run;
     setConnected(true);
-    sendMessage(json_to_run);
-    emit runJson(json_to_run);
+    qDebug()<<"发送信息成功";
+    sendMessage("{\"type\": \"full_update_request\"}");
+    json_to_run="";
+    fullUpdate=false;
     setStatus("Connected");
     qDebug() << "WebSocket connected";
 }
@@ -63,8 +67,6 @@ void WebSocketClient::onConnected()
 void WebSocketClient::onDisconnected()
 {
     setConnected(false);
-    setStatus("Disconnected");
-    emit runJson(json_to_run);
     qDebug() << "WebSocket disconnected";
 }
 

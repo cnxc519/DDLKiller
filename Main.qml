@@ -138,16 +138,39 @@ ApplicationWindow {
     //     }
     // }
 
-    Button{
-        text:"全量更新"
-        z:10000000
-        onClicked: {
-            //websocket.connectToServer("ws://8.148.4.26:8090");
-            websocket.sendMessage("{\"type\": \"full_update_request\"}");
+    // Button{
+    //     text:"全量更新"
+    //     z:10000000
+    //     onClicked: {
+    //         //websocket.json_to_run="full_update";
+    //         //console.log(websocket.json_to_run)
 
-            // websocket.json_to_run=databaseManager.getTodoItemsAsJsonString();
-            // console.log(websocket.json_to_run)
-            // websocket.connect();
+    //         websocket.fullUpdate=true;
+
+    //         websocket.connectToServer("ws://8.148.4.26:8090");
+    //     }
+    // }
+    Rectangle{
+        width:80
+        height:40
+        radius:20
+        //border.width:1
+        color:"lightgrey"
+        anchors.right: parent.right
+        anchors.bottom:parent.bottom
+        Text{
+            anchors.centerIn: parent
+            horizontalAlignment:Text.AlignHCenter
+            verticalAlignment:Text.AlignVCenter
+            text:"全量更新"
+        }
+        MouseArea{
+            anchors.fill: parent
+            onClicked:{
+                websocket.fullUpdate=true;
+
+                websocket.connectToServer("ws://8.148.4.26:8090");
+            }
         }
     }
 
@@ -225,26 +248,6 @@ ApplicationWindow {
     Connections{
         target:websocket
 
-        function onRunJson(jtr){
-            var jsonText = jtr;
-            if (jsonText.trim() === "") {
-                statusText.text = "Please enter JSON data";
-                return;
-            }
-
-            console.log("Processing JSON...");
-            var parseResult = jsonProcessor.parseAndProcessJson(jsonText);
-
-            if (parseResult.success) {
-                console.log("JSON parsed successfully, operation:", parseResult.operation);
-                databaseManager.processJsonResult(parseResult);
-                websocket.json_to_run="";
-            }
-            else {
-                statusText.text = "JSON Error: " + parseResult.error;
-                websocket.json_to_run="";
-            }
-        }
 
         function onMessageReceived(jtr){
             var jsonText = jtr;
@@ -265,6 +268,42 @@ ApplicationWindow {
                 statusText.text = "JSON Error: " + parseResult.error;
                 websocket.json_to_run="";
             }
+        }
+    }
+
+    Connections{
+        target:jsonGenerator
+
+        function onRunJson(jtr){
+            var jsonText = jtr;
+            if (jsonText.trim() === "") {
+                statusText.text = "Please enter JSON data";
+                return;
+            }
+
+            console.log("Processing JSON...");
+            var parseResult = jsonProcessor.parseAndProcessJson(jsonText);
+
+            if (parseResult.success) {
+                console.log("JSON parsed successfully, operation:", parseResult.operation);
+                databaseManager.processJsonResult(parseResult);
+                websocket.json_to_run="";
+            }
+            else {
+                statusText.text = "JSON Error: " + parseResult.error;
+                websocket.json_to_run="";
+            }
+        }
+    }
+
+    Connections{
+        target:databaseManager
+        function onReplyToServer(){
+            websocket.json_to_run=databaseManager.getTodoItemsAsJsonString();
+            console.log(websocket.json_to_run)
+            websocket.sendMessage(websocket.json_to_run);
+            websocket.json_to_run="";
+            databaseManager.resetOfflineFlags();
         }
     }
 
@@ -347,13 +386,31 @@ ApplicationWindow {
     //2.输入框禁用,已完成
     //3.输入mask的accepted设为true,已完成
     Item{
-        anchors.fill:parent
+        //anchors.fill:parent
+        anchors.centerIn: parent
+        width:250
+        height:350
         id:tianruxinxi
         visible:false
         z:100
+        MaskCalender{
+            //id:maskCalender
+            anchors.centerIn:parent
+            width:3000
+            height:3000
+            MouseArea{//要设置大小或anchors,不然scale=0
+                anchors.fill:parent
+                onClicked:{
+                    mouse.accepted=true
+                }
+            }
+
+            //visible:false
+        }
         Rectangle{//mask
             anchors.fill:parent
             color:"#ffffff"
+            radius:10
             MouseArea{
                 onClicked: {
                     mouse.accepted=true
@@ -361,7 +418,13 @@ ApplicationWindow {
             }
         }
         Column{
-            spacing:10
+            Rectangle{
+                color:"transparent"
+                height:10
+                width:10
+            }
+
+            spacing:30
             Column{
                 Row{
                     spacing:3
@@ -424,38 +487,99 @@ ApplicationWindow {
                 }
             }
             Row{
-                Button{
-                    text:isModifying?"Modify":"Add"
-                    onClicked:
-                    {
-                        if(namefield.text!=="")
+                Rectangle{
+                    width:80
+                    height:40
+                    radius:20
+                    border.width:1
+                    border.color:"lightgrey"
+                    Text{
+                        anchors.centerIn: parent
+                        horizontalAlignment:Text.AlignHCenter
+                        verticalAlignment:Text.AlignVCenter
+                        color:"green"
+                        text:isModifying?"Modify":"Add"
+                    }
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked:
                         {
-                            if(!isModifying){
-                                tianruxinxi.visible=0;
-                                jsonGenerator.generateAddJson(namefield.text,yearrr,monthhh,dateee)
-                                addUser()
-                                namefield.text=""
+                            if(namefield.text!=="")
+                            {
+                                if(!isModifying){
+                                    tianruxinxi.visible=0;
+                                    jsonGenerator.generateAddJson(namefield.text,yearrr,monthhh,dateee)
+                                    //addUser()
+                                    namefield.text=""
+                                }
+                                else{
+                                    tianruxinxi.visible=0;
+                                    jsonGenerator.generateModifyJson(modifyid,namefield.text,yearrr,monthhh,dateee)
+                                    isModifying=0
+                                    modifyid=0//TODO
+                                    namefield.text=""
+                                }
                             }
-                            else{
-                                tianruxinxi.visible=0;
-                                jsonGenerator.generateModifyJson(modifyid,namefield.text,yearrr,monthhh,dateee)
-                                isModifying=0
-                                modifyid=0//TODO
-                                namefield.text=""
-                            }
-                        }
-                        else warning.visible=true
-                    }//TODO
-                }
-                Button{
-                    text:"Cancel"
-                    onClicked:{
-                        refreshData()
-                        isModifying=0
-                        modifyid=0//TODO
-                        tianruxinxi.visible=0
+                            else warning.visible=true
+                        }//TODO
                     }
                 }
+
+                // Button{
+                //     text:isModifying?"Modify":"Add"
+                //     onClicked:
+                //     {
+                //         if(namefield.text!=="")
+                //         {
+                //             if(!isModifying){
+                //                 tianruxinxi.visible=0;
+                //                 jsonGenerator.generateAddJson(namefield.text,yearrr,monthhh,dateee)
+                //                 //addUser()
+                //                 namefield.text=""
+                //             }
+                //             else{
+                //                 tianruxinxi.visible=0;
+                //                 jsonGenerator.generateModifyJson(modifyid,namefield.text,yearrr,monthhh,dateee)
+                //                 isModifying=0
+                //                 modifyid=0//TODO
+                //                 namefield.text=""
+                //             }
+                //         }
+                //         else warning.visible=true
+                //     }//TODO
+                // }
+                Rectangle{
+                    width:80
+                    height:40
+                    radius:20
+                    border.width:1
+                    border.color:"lightgrey"
+                    Text{
+                        color:"red"
+                        anchors.centerIn: parent
+                        horizontalAlignment:Text.AlignHCenter
+                        verticalAlignment:Text.AlignVCenter
+                        text:"Cancel"
+                    }
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked:{
+                            refreshData()
+                            isModifying=0
+                            modifyid=0//TODO
+                            tianruxinxi.visible=0
+                        }
+                    }
+                }
+                // Button{
+                //     text:"Cancel"
+                //     onClicked:{
+                //         refreshData()
+                //         isModifying=0
+                //         modifyid=0//TODO
+                //         tianruxinxi.visible=0
+                //     }
+                // }
             }
         }
     }
@@ -492,6 +616,7 @@ ApplicationWindow {
         MaskCalender{
             id:maskCalender
             anchors.fill:parent
+            opacity:0.8
             MouseArea{//要设置大小或anchors,不然scale=0
                 anchors.fill:parent
                 onClicked:{
@@ -571,12 +696,32 @@ ApplicationWindow {
     }
 
     //添加事项按钮,最终版本应该是可长按可点按的图案
-    Button{
-        text:"添加事项"
+    // Button{
+    //     text:"添加事项"
+    //     anchors.bottom: parent.bottom
+    //     anchors.horizontalCenter: parent.horizontalCenter
+    //     onClicked:{
+    //         tianruxinxi.visible=1
+    //     }
+    // }
+    Rectangle{
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        onClicked:{
-            tianruxinxi.visible=1
+        width:80
+        height:40
+        radius:20
+        color:"lightgrey"
+        Text{
+            anchors.centerIn: parent
+            horizontalAlignment:Text.AlignHCenter
+            verticalAlignment:Text.AlignVCenter
+            text:"添加事项"
+        }
+        MouseArea{
+            anchors.fill: parent
+            onClicked:{
+                tianruxinxi.visible=1
+            }
         }
     }
 

@@ -23,6 +23,8 @@ public:
     Q_INVOKABLE QString generateDeleteJson(const QString &uuid);
 
     Q_INVOKABLE QString generateModifyJson(const QString &uuid,const QString &name,int year,int month,int day);
+signals:
+    void runJson(const QString &jtr);
 
     // {/"type/":/"modification/",/"content/":{/"operation/":/"delete/",/"target_id/":/"20240615093000123/"}}
 

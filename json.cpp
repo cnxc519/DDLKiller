@@ -1,4 +1,5 @@
 #include "json.h"
+#include "database.h"
 
 JsonProcessor::JsonProcessor(QObject *parent)
     : QObject(parent)
@@ -103,7 +104,29 @@ QVariantMap JsonProcessor::parseAndProcessJson(const QString &jsonData)
         result["message"] = "Sync data received";
     }
     else if(type == "response"){
-        return result;
+        if (!rootObject.contains("content") || !rootObject["content"].isObject()) {
+            result["error"] = "Invalid or missing 'content' object for modification";
+            emit jsonError(result["error"].toString());
+            return result;
+        }
+        if (!rootObject.value("content").toObject().contains("operation") || rootObject.value("content").toObject()["operation"].isObject()){
+
+            return result;
+        }
+        QJsonValue value = rootObject.value("content").toObject().value("operation");
+        QString opr = value.toString();
+        if(opr=="add"){
+            QString uuid=rootObject.value("content").toObject().value("operation").toString();
+
+            //将这个uuid的offline_add设为false
+             DatabaseManager::getInstance()->markOnlineAdd(uuid);
+        }
+        if(opr=="delete"){
+            QString uuid=rootObject.value("content").toObject().value("operation").toString();
+
+            //将这个uuid执行真删除
+             DatabaseManager::getInstance()->markOnlineDelete(uuid);
+        }
     }
     else {
         result["error"] = "Unknown type: " + type;

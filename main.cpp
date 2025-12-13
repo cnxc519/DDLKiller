@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
     // 使用单例模式创建Websocket实例
     WebSocketClient *webSocketClient = WebSocketClient::getInstance(&app);
 
-    // 初始化数据库管理器
-    DatabaseManager *dbManager = new DatabaseManager();
+    // 使用单例模式获取数据库管理器实例
+    DatabaseManager *dbManager = DatabaseManager::getInstance();
     // 创建数据库表
     if (!dbManager->createTable()) {
         qWarning() << "Failed to create database table";
@@ -54,10 +54,14 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     engine.loadFromModule("DDLonline", "Main");
-    //问题反正是解决了,咱也不知道两个代码为什么那个行这个不行,用上面这个反正可以了
-    //engine.load(url);
 
-    //dataSql.initializeDatabase();
+    webSocketClient->fullUpdate=true;
+    webSocketClient->connectToServer("ws://8.148.4.26:8090");
 
-    return app.exec();
+    int result = app.exec();
+
+    // 程序退出前销毁单例
+    DatabaseManager::destroyInstance();
+
+    return result;
 }

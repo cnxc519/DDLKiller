@@ -5,6 +5,25 @@
 //有个向服务器发送成功的消息,收到那个后所以offline变为0
 //任何full_update后都代表连接着,可以执行reset
 
+// 单例实例初始化
+DatabaseManager* DatabaseManager::instance = nullptr;
+
+DatabaseManager* DatabaseManager::getInstance()
+{
+    if (!instance) {
+        instance = new DatabaseManager();
+    }
+    return instance;
+}
+
+void DatabaseManager::destroyInstance()
+{
+    if (instance) {
+        delete instance;
+        instance = nullptr;
+    }
+}
+
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)//, m_isOnline(true) // 默认在线
 {
@@ -133,7 +152,7 @@ QString DatabaseManager::getTodoItemsAsJsonString()
 QVariantList DatabaseManager::getTodoItems()
 {
 
-    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
+    //WebSocketClient* webSocketClient = WebSocketClient::getInstance();
     QVariantList items;
 
     if (!m_database.isOpen()) {
@@ -142,9 +161,9 @@ QVariantList DatabaseManager::getTodoItems()
     }
 
     // 在线状态下不显示标记为离线删除的项目
-     //webSocketClient->connected() ?
+    //webSocketClient->connected() ?
     QString querySql =   "SELECT uuid, last_modified, title, description, due_date, complete_flag, offline_add, offline_delete FROM todo_items WHERE offline_delete = 0 ORDER BY due_date";
-                           //"SELECT uuid, last_modified, title, description, due_date, complete_flag, offline_add, offline_delete FROM todo_items ORDER BY due_date";
+    //"SELECT uuid, last_modified, title, description, due_date, complete_flag, offline_add, offline_delete FROM todo_items ORDER BY due_date";
 
     QSqlQuery query(querySql);
 
@@ -257,8 +276,11 @@ bool DatabaseManager::applyServerChanges(const QVariantList &serverItems)
     handleOfflineAdditions(serverUuids);
 
 
-    //目前问题:服务器没有的但是本地有的,没有正确删除
-    emit dataChanged();
+    //目前问题:服务器没有的但是本地有的,没有正确删除,已解决
+    //emit dataChanged();
+
+    emit replyToServer();
+
     return true;
 }
 
@@ -425,16 +447,16 @@ void DatabaseManager::handleDataConflicts(const QVariantList &serverItems)
 
 bool DatabaseManager::processAddOperation(const QVariantMap &operationData)
 {
-    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
+    //WebSocketClient* webSocketClient = WebSocketClient::getInstance();
     QVariantMap item = operationData["item"].toMap();
-    return insertTodoItem(item, !webSocketClient->connected()); // 离线状态下添加标记为离线添加
+    return insertTodoItem(item, 1); // 离线状态下添加标记为离线添加!webSocketClient->connected(),默认离线,收到发送成功信号后在线
 }
 
 bool DatabaseManager::processDeleteOperation(const QVariantMap &operationData)
 {
-    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
+    //WebSocketClient* webSocketClient = WebSocketClient::getInstance();
     QString targetId = operationData["target_uuid"].toString();
-    return deleteTodoItem(targetId, !webSocketClient->connected()); // 离线状态下删除标记为离线删除
+    return deleteTodoItem(targetId, 1); // 离线状态下删除标记为离线删除!webSocketClient->connected(),默认离线,收到发送成功信号后在线
 }
 
 bool DatabaseManager::processModifyOperation(const QVariantMap &operationData)
@@ -456,6 +478,7 @@ bool DatabaseManager::processFullUpdateNoresponse(const QVariantList &items)
             allSuccess = false;
         }
     }
+
 
     return allSuccess;
 }
@@ -551,7 +574,7 @@ bool DatabaseManager::deleteTodoItem(const QString &uuid, bool isOfflineDelete)
 
             qInfo() << "Marked todo item as offline deleted:" << uuid;
         } else {
-            // offline_add = 1：直接真删除
+            // offline_add = 1：硬删除
             query.prepare("DELETE FROM todo_items WHERE uuid = ?");
             query.addBindValue(uuid);
 
@@ -692,6 +715,32 @@ bool DatabaseManager::resetOfflineFlags()
     qInfo() << "All offline flags have been reset to 0";
     emit dataChanged(); // 通知UI数据已更改
     return true;
+}
+//若服务器收到更新,则将服务器收到的改为online
+void DatabaseManager::markOnlineAdd(const QString &uuid){
+    QSqlQuery query;
+
+    query.prepare("UPDATE todo_items SET offline_add = 0 WHERE uuid = ?");
+
+    query.addBindValue(uuid);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to markOnlineAdd:" << query.lastError().text();
+    }
+    else qDebug()<<"Success to markOnlineAdd";
+
+}
+void DatabaseManager::markOnlineDelete(const QString &uuid){
+    QSqlQuery query;
+
+    query.prepare("DELETE FROM todo_items WHERE uuid = ?");
+
+    query.addBindValue(uuid);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to markOnlineDelete:" << query.lastError().text();
+    }
+    else qDebug()<<"Success to markOnlineDelete";
 }
 
 QString DatabaseManager::generateUuid()

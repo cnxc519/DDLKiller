@@ -36,9 +36,16 @@ class DatabaseManager : public QObject
     Q_OBJECT
     //Q_PROPERTY(bool isOnline READ isOnline WRITE setIsOnline NOTIFY isOnlineChanged)
 
-public:
+private:
+    static DatabaseManager* instance;
     explicit DatabaseManager(QObject *parent = nullptr);
+
+public:
     ~DatabaseManager();
+
+    // 单例模式相关
+    static DatabaseManager* getInstance();
+    static void destroyInstance();
 
     Q_INVOKABLE bool createTable();
     Q_INVOKABLE QVariantList getTodoItems();
@@ -56,11 +63,15 @@ public:
     Q_INVOKABLE QString getTodoItemsAsJsonString();
     QJsonObject getTodoItemsAsJson();
 
+    void markOnlineAdd(const QString &uuid);
+    void markOnlineDelete(const QString &uuid);
+
 signals:
     void dataChanged();
     void operationCompleted(const QString &operation, bool success, const QString &message);
     //void isOnlineChanged(bool online);
     void syncDataAvailable();
+    void replyToServer();
 
 private:
     QSqlDatabase m_database;

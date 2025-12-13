@@ -6,17 +6,16 @@ JsonGenerator::JsonGenerator(QObject *parent):QObject(parent) {}
 
 QString JsonGenerator::generateAddJson(const QString &name,int year,int month,int day){
     QString jsonwaited=QString("{\"type\": \"modification\",\"content\": {\"operation\": \"add\",\"uuid\":\"%1\",\"title\": \"%2\",\"description\":\"\",\"due_date\": \"%3\", \"complete_flag\": false}}").arg(generateUuid()).arg(name).arg(formatDate(year,month,day));
-    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
-    webSocketClient->json_to_run=jsonwaited;
+
     qDebug()<<jsonwaited;
     qDebug() << jsonwaited.toUtf8().constData();
 
-    webSocketClient->connectToServer("ws://8.148.4.26:8090");//ws://8.148.4.26:8090
+    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
+    webSocketClient->sendMessage(jsonwaited);
+    emit runJson(jsonwaited);
 
-    // QString jsontest=QString("{\"type\": \"modification\"}");
-    // qDebug()<<jsontest;
     return jsonwaited;
-    //QString json = QString("{\"name\": \"%1\", \"age\": %2}").arg(name).arg(age);
+
 }
 
 //WebSocketClient* webSocketClient = WebSocketClient::getInstance();
@@ -26,10 +25,10 @@ QString JsonGenerator::generateDeleteJson(const QString &uuid){
     QString jsonwaited=QString("{\"type\":\"modification\",\"content\":{\"operation\":\"delete\",\"target_uuid\":\"%1\"}}").arg(uuid);
     qDebug()<<jsonwaited;
     qDebug() << jsonwaited.toUtf8().constData();
-    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
-    webSocketClient->json_to_run=jsonwaited;
 
-    webSocketClient->connectToServer("ws://8.148.4.26:8090");
+    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
+    webSocketClient->sendMessage(jsonwaited);
+    emit runJson(jsonwaited);
 
     return jsonwaited;
 }
@@ -38,10 +37,10 @@ QString JsonGenerator::generateModifyJson(const QString &uuid,const QString &nam
     QString jsonwaited=QString("{\"type\":\"modification\",\"content\": {\"operation\":\"modify\",\"target_uuid\":\"%1\",\"last_modified\":\"%2\",\"title\":\"%3\",\"description\":\"\",\"due_date\":\"%4\",\"complete_flag\": false}}").arg(uuid).arg(generateUuid()).arg(name).arg(formatDate(year,month,day));
     qDebug()<<jsonwaited;
     qDebug() << jsonwaited.toUtf8().constData();
-    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
-    webSocketClient->json_to_run=jsonwaited;
 
-    webSocketClient->connectToServer("ws://8.148.4.26:8090");
+    WebSocketClient* webSocketClient = WebSocketClient::getInstance();
+    webSocketClient->sendMessage(jsonwaited);
+    emit runJson(jsonwaited);
 
     return jsonwaited;
 }

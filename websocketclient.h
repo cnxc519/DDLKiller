@@ -25,15 +25,20 @@ public:
     QString status() const { return m_status; }
     QString lastMessage() const { return m_lastMessage; }
 
+
+
     //创建全局维护的json_to_run
     QString json_to_run="";
+
+    bool fullUpdate=0;
+
 
 signals:
     void connectedChanged();
     void statusChanged();
     void messageReceived(const QString &jtr);
     void errorOccurred(const QString &error);
-    void runJson(const QString &jtr);
+
 
 private slots:
     void onConnected();
