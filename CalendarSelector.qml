@@ -12,11 +12,11 @@ Rectangle{
     color:"white"
     radius: 10
 
-    // 开放的属性，供外部调用
+    // 开放的属性
     property date selectedDate: new Date()
     property alias currentDate: calendar.currentDate
 
-    // 优雅的配色方案 - 可自定义
+    // 优雅颜色
     property color primaryColor: "#6366f1"
     property color secondaryColor: "#8b5cf6"
     property color accentColor: "#06b6d4"
@@ -25,7 +25,7 @@ Rectangle{
     property color hoverColor: "#f1f5f9"
     property color shadowColor: "#00000020"
 
-    // 信号，当日期被选择时发出
+    // 当日期被选择时发信号
     signal dateSelected(date selectedDate)
 
 
@@ -45,7 +45,7 @@ Rectangle{
             border.color: "#e2e8f0"
             border.width: 1
 
-            // 使用多层边框模拟阴影效果
+            // 模拟阴影效果
             Rectangle {
                 x: 1
                 y: 1
@@ -193,7 +193,7 @@ Rectangle{
         // 日历网格
         Grid {
             width: parent.width
-            height: parent.height - 32 - 36 - 24 - 24 // 总高度减去其他组件高度和间距
+            height: parent.height - 32 - 36 - 24 - 24
             rows: 6
             columns: 7
             rowSpacing: 3
@@ -201,7 +201,7 @@ Rectangle{
 
             Repeater {
                 id: dayRepeater
-                model: 42 // 6行×7列
+                model: 42 // 6×7日历
 
                 Item {
                     id: dayItem

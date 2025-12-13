@@ -1,4 +1,3 @@
-
 #include "DataSql.h"
 #include <QDebug>
 #include <QDir>

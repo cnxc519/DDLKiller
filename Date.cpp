@@ -5,7 +5,7 @@
 
 QDate curDate = QDate::currentDate();
 
-int todayzhouji=curDate.dayOfWeek();//之前假设今天是周三,现已成功获取星期
+int currentDayOfWeek=curDate.dayOfWeek();//获取今日星期
 
 Date::Date(QObject *parent):QObject(parent) {}
 
@@ -25,34 +25,35 @@ QString Date::getExplicitDate(int year,int month, int day)
     // qDebug()<<calculatejuzhezhou0duoshaotian(jujin);
 
 
-    jujinkaifang=julitianshu(year,month,day);
+    //jujinkaifang=julitianshu(year,month,day);
 
     //return "666";
-    return xianshiyikanriqi(year,month,day);
+    return displayExplicitDate(year,month,day);
 }
 
-int calculatejuzhezhou0duoshaotian(int jj){//参数为距今多少天
-    return jj+int(todayzhouji);
+int daysFromZero(int daysDifference){//参数为距今多少天
+    return daysDifference+int(currentDayOfWeek);
 }
 
 int Date::getmodelindex(int year,int month,int date){
-    int tianshu=julitianshu(year,month,date);
-    if(tianshu<=2) return 0;
-    else if(tianshu<=13) return 1;
+    int daysDifference=calculateDaysDifference(year,month,date);
+
+    if(daysDifference<=2) return 0;
+    else if(daysDifference<=13) return 1;
     else return 2;
 
 }
 
-QString xianshiyikanriqi(int y,int m,int d){
+QString displayExplicitDate(int y,int m,int d){
 
-    int jujin=julitianshu(y,m,d);
+    int daysDifference=calculateDaysDifference(y,m,d);
 
-    if(jujin<=-2){
+    if(daysDifference<=-2){
         //TODO:发信号,删除信息,refresh
         return "程序出错,未自动删除成功";
     }
 
-    switch (jujin) {
+    switch (daysDifference) {
     case -1:
         return "昨天结束";//可以加一个信号
         break;
@@ -73,33 +74,33 @@ QString xianshiyikanriqi(int y,int m,int d){
         break;
     }
 
-    int cur=calculatejuzhezhou0duoshaotian(jujin);
+    int cur=daysFromZero(daysDifference);
 
     switch ((cur-1)/7) {
     case 0:
-        return "本周"+weektohanzi(cur%7);//TODO
+        return "本周"+weekToChinese(cur%7);//TODO
         break;
     case 1:
-        return "下周"+weektohanzi(cur%7);//实际上应该是QString类型函数
+        return "下周"+weekToChinese(cur%7);//实际上应该是QString类型函数
         break;
     case 2:
-        return "下下周"+weektohanzi(cur%7);
+        return "下下周"+weekToChinese(cur%7);
         break;
     case 3:
-        return "第三周周"+weektohanzi(cur%7);
+        return "第三周周"+weekToChinese(cur%7);
         break;
     case 4:
-        return "第四周周"+weektohanzi(cur%7);
+        return "第四周周"+weekToChinese(cur%7);
         break;
     case 5:
-        return "第五周周"+weektohanzi(cur%7);
+        return "第五周周"+weekToChinese(cur%7);
         break;
     default:
-        return jigeyue(jujin/30);
+        return monthsLaterText(daysDifference/30);
         break;
     }
 }
-QString jigeyue(int a){
+QString monthsLaterText(int a){
     switch(a){
     case 1:
         return "一个月后";
@@ -125,7 +126,7 @@ QString jigeyue(int a){
     }
 }
 
-int julitianshu(int ddlyear,int ddlmonth,int ddlday){
+int calculateDaysDifference(int ddlyear,int ddlmonth,int ddlday){
     qDebug()<<curDate.year()<<"-"<<curDate.month()<<"-"<<curDate.day();
 
     int todayyear=curDate.year(),todaymonth=curDate.month(),todayday=curDate.day();
@@ -152,9 +153,9 @@ int julitianshu(int ddlyear,int ddlmonth,int ddlday){
     return static_cast<int>(difference / (60 * 60 * 24));
 }
 
-QString weektohanzi(int zhouji){//从数字返回今天是周几
+QString weekToChinese(int dayOfWeek){//从数字返回今天是周几
 
-    switch (zhouji) {
+    switch (dayOfWeek) {
     case 1:
         return "一";
         break;

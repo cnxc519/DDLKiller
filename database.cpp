@@ -379,18 +379,6 @@ void DatabaseManager::handleDataConflicts(const QVariantList &serverItems)
                     DELETE FROM todo_items WHERE uuid = ?
                 )");
 
-                // updateQuery.prepare(R"(
-                //     UPDATE todo_items
-                //     SET last_modified = ?, title = ?, description = ?, due_date = ?,
-                //         complete_flag = ?, offline_delete = 0
-                //     WHERE uuid = ?
-                // )");
-
-                // updateQuery.addBindValue(serverLastModified);
-                // updateQuery.addBindValue(serverItem["title"].toString());
-                // updateQuery.addBindValue(serverItem["description"].toString());
-                // updateQuery.addBindValue(serverItem["due_date"].toString());
-                // updateQuery.addBindValue(serverItem["complete_flag"].toBool() ? 1 : 0);
                 updateQuery.addBindValue(uuid);
 
                 if (!updateQuery.exec()) {

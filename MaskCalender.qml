@@ -8,6 +8,4 @@ Item {
         color:"#000000"
         opacity:0.5
     }
-
-
 }

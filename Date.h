@@ -11,20 +11,18 @@ public:
 
     Q_INVOKABLE QString getExplicitDate(int year,int month,int day);
 
-    Q_INVOKABLE int jujinkaifang;
-
     Q_INVOKABLE int getmodelindex(int,int,int);
 };
 
-int julitianshu(int,int,int);
-int calculatejuzhezhou0duoshaotian(int);
+int calculateDaysDifference(int,int,int);
+int daysFromZero(int);
 
 // QDate curDate;
 
-QString xianshiyikanriqi(int,int ,int);
+QString displayExplicitDate(int,int ,int);
 
-QString weektohanzi(int );
+QString weekToChinese(int dayOfWeek);
 
-QString jigeyue(int);
+QString monthsLaterText(int);
 
 #endif // DATE_H

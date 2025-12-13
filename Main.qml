@@ -75,81 +75,19 @@ ApplicationWindow {
     // 数据库状态
     property bool dbInitialized: false
     property string dbStatus: "Initializing database..."
-    property int hangshu:0
 
     //日历的开放存储
-    property int zancunyear
-    property int zancunmonth
-    property int zancundatee
+    property int tempYear
+    property int tempMonth
+    property int tempDay
     property date cDate:new Date()
-    property int yearrr:cDate.getFullYear()
-    property int monthhh:cDate.getMonth()+1
-    property int dateee:cDate.getDate()
+    property int storedYear:cDate.getFullYear()
+    property int storedMonth:cDate.getMonth()+1
+    property int storedDay:cDate.getDate()
 
     property bool isModifying:false
-    property string modifyid
+    property string modifyUUID
 
-    // 连接数据库信号
-    // Connections {
-    //     target: dataSql
-
-    //     // function onDatabaseInitialized(success) {
-    //     //     dbInitialized = success
-    //     //     if (success) {
-    //     //         dbStatus = "Database initialized successfully"
-    //     //         refreshData()
-    //     //     } else {
-    //     //         dbStatus = "Database initialization failed"
-    //     //     }
-    //     // }
-
-    //     function onQueryExecuted(success) {
-    //         if (success) {
-    //             dbStatus = "Query executed successfully"
-    //         }
-    //     }
-
-    //     function onErrorOccurred(errorMessage) {
-    //         dbStatus = "Error: " + errorMessage
-    //     }
-
-    //     function onQueryHangShu(hangshuu){
-    //         hangshu=hangshuu
-    //         dbStatus=hangshu
-    //     }
-    // }
-
-
-    // function refreshData() {
-    //     console.log("Refreshing data...");
-    //     var items = databaseManager.getTodoItems();
-    //     if (items && items.length >= 0) {
-    //         // 清空现有模型
-    //         todoItemsModel.clear();
-
-    //         // 将数据添加到 ListModel
-    //         for (var i = 0; i < items.length; i++) {
-    //             todoItemsModel.append(items[i]);
-    //         }
-
-    //         console.log("Loaded", todoItemsModel.count, "items");
-    //     } else {
-    //         console.log("Failed to load items");
-    //     }
-    // }
-
-    // Button{
-    //     text:"全量更新"
-    //     z:10000000
-    //     onClicked: {
-    //         //websocket.json_to_run="full_update";
-    //         //console.log(websocket.json_to_run)
-
-    //         websocket.fullUpdate=true;
-
-    //         websocket.connectToServer("ws://8.148.4.26:8090");
-    //     }
-    // }
     Rectangle{
         width:80
         height:40
@@ -176,14 +114,6 @@ ApplicationWindow {
 
     // 刷新数据函数
     function refreshData() {
-        // if (!dbInitialized) {
-        //     dbStatus = "Cannot refresh data: database not initialized"
-        //     return
-        // }
-
-        // if (!dataSql.executeQuery("SELECT * FROM users ORDER BY due_date")) {
-        //     return
-        // }
 
         groupModels[0].clear()
         groupModels[1].clear()
@@ -212,9 +142,9 @@ ApplicationWindow {
         calendarSelector.selectedDate=calenderwhole.nowDate//实际上放在add进list那个按钮上比较好
         calendarSelector.currentDate=calenderwhole.nowDate
 
-        yearrr=cDate.getFullYear()
-        monthhh=cDate.getMonth()+1
-        dateee=cDate.getDate()
+        storedYear=cDate.getFullYear()
+        storedMonth=cDate.getMonth()+1
+        storedDay=cDate.getDate()
 
         warning.visible=0
     }
@@ -231,11 +161,6 @@ ApplicationWindow {
             }
         });
 
-        // databaseManager.isOnlineChanged.connect(function(online) {
-        //     onlineStatusText.text = online ? "Online" : "Offline";
-        //     onlineStatusIndicator.color = online ? "green" : "red";
-        //     refreshData();
-        // });
 
         jsonProcessor.jsonError.connect(function(errorMessage) {
             //statusText.text = "JSON Error: " + errorMessage;
@@ -307,76 +232,7 @@ ApplicationWindow {
         }
     }
 
-    // function processJson() {
-    //     var jsonText = jsonTextArea.text;
-    //     if (jsonText.trim() === "") {
-    //         statusText.text = "Please enter JSON data";
-    //         return;
-    //     }
 
-    //     console.log("Processing JSON...");
-    //     var parseResult = jsonProcessor.parseAndProcessJson(jsonText);
-
-    //     if (parseResult.success) {
-    //         console.log("JSON parsed successfully, operation:", parseResult.operation);
-    //         databaseManager.processJsonResult(parseResult);
-    //     } else {
-    //         statusText.text = "JSON Error: " + parseResult.error;
-    //     }
-    // }
-
-
-
-    // 添加新项目函数
-    // function addUser() {
-    //     if (!dbInitialized) {
-    //         dbStatus = "Cannot add user: database not initialized"//
-    //         return
-    //     }
-
-    //     var name = namefield.text
-    //     var year = yearrr//parseInt(yearfield.text)
-    //     var month = monthhh//parseInt(monthfield.text)
-    //     var day = dateee//parseInt(dateefield.text)
-
-    //     if (name === "" || month === NaN|| day === NaN || year===NaN) {
-    //         dbStatus = "Name and date are required"
-    //         return
-    //     }
-
-    //     var query = "INSERT INTO users (name,year, month,day) VALUES (?,?,?,?)"
-    //     var params = [name,year,month,day]//isNaN(month) ? null : moth
-
-    //     if (!dataSql.executeQueryWithParams(query, params)) {
-    //         return
-    //     }
-    //     //sortData()
-    //     refreshData()
-    //     // 清空输入字段
-    //     //yearfield.text=""
-    //     //namefield.text = ""
-    //     //monthfield.text = ""
-    //     //dateefield.text=""
-
-
-    //     //currentDate和selectedDate变为new Date()
-
-    //     dbStatus = "User added successfully"
-    //     return
-    // }
-
-    // 删除项目函数
-    // function deleteData(idd){
-
-    //     var query = "DELETE FROM users WHERE id=?"
-    //     var params=[idd]
-    //     if (!dataSql.executeQueryWithParams(query, params)) {
-    //         return
-    //     }
-    //     refreshData()
-    //     dbStatus = "User deleted successfully"
-    //     return
-    // }
 
     //添加新事项界面,待美化界面,将日历加入,日历加入已完成
     //点add就退出界面逻辑不对,应该是判断not null,还应该有个取消按钮是直接退出
@@ -455,7 +311,7 @@ ApplicationWindow {
             Row{
                 spacing:3
                 Text{
-                    text:`日期: ${yearrr}-${monthhh}-${dateee}`
+                    text:`日期: ${storedYear}-${storedMonth}-${storedDay}`
                     font.pixelSize: 16
                     font.bold: true
                 }
@@ -479,7 +335,7 @@ ApplicationWindow {
                         onClicked: {
                             namefield.focus=false
                             calenderwhole.visible=1
-                            var nDate = new Date(yearrr,monthhh-1,dateee)
+                            var nDate = new Date(storedYear,storedMonth-1,storedDay)
                             calendarSelector.selectedDate = nDate
                             calendarSelector.dateSelected(nDate)
                         }
@@ -508,15 +364,15 @@ ApplicationWindow {
                             {
                                 if(!isModifying){
                                     tianruxinxi.visible=0;
-                                    jsonGenerator.generateAddJson(namefield.text,yearrr,monthhh,dateee)
+                                    jsonGenerator.generateAddJson(namefield.text,storedYear,storedMonth,storedDay)
                                     //addUser()
                                     namefield.text=""
                                 }
                                 else{
                                     tianruxinxi.visible=0;
-                                    jsonGenerator.generateModifyJson(modifyid,namefield.text,yearrr,monthhh,dateee)
+                                    jsonGenerator.generateModifyJson(modifyUUID,namefield.text,storedYear,storedMonth,storedDay)
                                     isModifying=0
-                                    modifyid=0//TODO
+                                    modifyUUID=0//TODO
                                     namefield.text=""
                                 }
                             }
@@ -525,29 +381,6 @@ ApplicationWindow {
                     }
                 }
 
-                // Button{
-                //     text:isModifying?"Modify":"Add"
-                //     onClicked:
-                //     {
-                //         if(namefield.text!=="")
-                //         {
-                //             if(!isModifying){
-                //                 tianruxinxi.visible=0;
-                //                 jsonGenerator.generateAddJson(namefield.text,yearrr,monthhh,dateee)
-                //                 //addUser()
-                //                 namefield.text=""
-                //             }
-                //             else{
-                //                 tianruxinxi.visible=0;
-                //                 jsonGenerator.generateModifyJson(modifyid,namefield.text,yearrr,monthhh,dateee)
-                //                 isModifying=0
-                //                 modifyid=0//TODO
-                //                 namefield.text=""
-                //             }
-                //         }
-                //         else warning.visible=true
-                //     }//TODO
-                // }
                 Rectangle{
                     width:80
                     height:40
@@ -566,20 +399,11 @@ ApplicationWindow {
                         onClicked:{
                             refreshData()
                             isModifying=0
-                            modifyid=0//TODO
+                            modifyUUID=0//TODO
                             tianruxinxi.visible=0
                         }
                     }
                 }
-                // Button{
-                //     text:"Cancel"
-                //     onClicked:{
-                //         refreshData()
-                //         isModifying=0
-                //         modifyid=0//TODO
-                //         tianruxinxi.visible=0
-                //     }
-                // }
             }
         }
     }
@@ -604,11 +428,11 @@ ApplicationWindow {
                 console.log("选择的年份:",selectedDate.getFullYear())
                 console.log("选择的月份:",selectedDate.getMonth()+1)
                 console.log("选择的日期:",selectedDate.getDate())
-                zancunyear=selectedDate.getFullYear()
-                zancunmonth=selectedDate.getMonth()+1
-                zancundatee=selectedDate.getDate()
+                tempYear=selectedDate.getFullYear()
+                tempMonth=selectedDate.getMonth()+1
+                tempDay=selectedDate.getDate()
             }
-            // 初始化时设置特定日期（可选）
+            // 初始化时设置特定日期
             // Component.onCompleted: {
             //     calendarSelector.goToDate(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
             // }
@@ -656,9 +480,9 @@ ApplicationWindow {
                     height: parent.height
                     hoverEnabled: true
                     onClicked: {
-                        yearrr=zancunyear
-                        monthhh=zancunmonth
-                        dateee=zancundatee
+                        storedYear=tempYear
+                        storedMonth=tempMonth
+                        storedDay=tempDay
                         calenderwhole.visible=0
                     }
 
@@ -695,15 +519,7 @@ ApplicationWindow {
         }
     }
 
-    //添加事项按钮,最终版本应该是可长按可点按的图案
-    // Button{
-    //     text:"添加事项"
-    //     anchors.bottom: parent.bottom
-    //     anchors.horizontalCenter: parent.horizontalCenter
-    //     onClicked:{
-    //         tianruxinxi.visible=1
-    //     }
-    // }
+
     Rectangle{
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
@@ -776,6 +592,11 @@ ApplicationWindow {
                         spacing: 10
                         anchors.margins: 12
 
+                        // 空Item，用于撑开顶部空间
+                            Item {
+                                width: parent.width
+                                height: 0.5
+                            }
                         // Group Title
                         Text {
                             text: title
@@ -783,6 +604,7 @@ ApplicationWindow {
                             font.pointSize: 12
                             color: "#333"
                             anchors.horizontalCenter: parent.horizontalCenter
+                            //anchors.topMargin: 50
                         }
 
                         // Inner Task List
@@ -899,56 +721,15 @@ ApplicationWindow {
                                     onClicked: console.log("点击了:", name)
                                     onPressAndHold: {
                                         isModifying=1
-                                        modifyid=model.uuid
+                                        modifyUUID=model.uuid
                                         namefield.text=model.title
                                         tianruxinxi.visible=1
                                         console.log( "方法1: 长按触发成功!")
                                     }
                                 }
-                            }//rectangle
-                            //先只是注释delegate的Rectangle
-                            // delegate: Rectangle {
-                            //     width: contentColumn.width - 40
-                            //     height: 36
-                            //     radius: 8
-                            //     color: index % 2 === 0 ? "#ffffff" : "#f9f9f9"
-                            //     anchors.horizontalCenter: parent.horizontalCenter
-                            //     border.color: "#ccc"
-
-                            //     Text {
-                            //         text: `${model.name}:${model.month}.${model.day}`
-                            //         anchors.centerIn: parent
-                            //         color: "#333"
-                            //     }
-                            //     MouseArea {
-                            //         width: 30
-                            //         height:30
-                            //         Text{
-                            //             anchors.fill:parent
-                            //             anchors.leftMargin: 10
-                            //             text:"x"
-                            //             width:parent.width*2
-                            //             height:parent.height*2
-                            //             color:"red"
-                            //         }
-
-                            //         onClicked: {
-                            //             deleteData(model.id)
-                            //         }
-                            //     }
+                            }
                         }
-                    }//listview
-
-                    // Add Button
-                    // Button {
-                    //     text: "＋ Add Task"
-                    //     anchors.horizontalCenter: parent.horizontalCenter
-                    //     background: Rectangle {
-                    //         color: Qt.lighter(color, 1.1)
-                    //         radius: 6
-                    //     }
-                    //     onClicked: subModel.append({ "name": "New Task " + (subModel.count + 1) })
-                    // }
+                    }
                 }
             }
         }
