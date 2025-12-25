@@ -1,3 +1,5 @@
+//json模板生成
+
 #ifndef JSONGENERATOR_H
 #define JSONGENERATOR_H
 

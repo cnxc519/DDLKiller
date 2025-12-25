@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include <QSqlQuery>
-#include <QSqlRecord>  // 添加这行
-#include <QSqlError>   // 添加这行
+#include <QSqlRecord>
+#include <QSqlError>
 #include <QVariantList>
 
 class DataSql : public QObject
