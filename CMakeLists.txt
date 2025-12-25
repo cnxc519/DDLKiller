@@ -34,8 +34,8 @@ qt_add_qml_module(appDDLonline
         SOURCES websocketclient.h
         SOURCES json.h
         SOURCES websocketclient.cpp
-        #RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
-        #RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
+        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
+        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -56,11 +56,11 @@ target_link_libraries(appDDLonline
     Qt6::WebSockets
 )
 
-# if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/android)
-#     set_target_properties(appDDLonline PROPERTIES
-#        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
-#     )
-# endif()
+if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/android)
+    set_target_properties(appDDLonline PROPERTIES
+       QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+    )
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS appDDLonline
@@ -68,7 +68,7 @@ install(TARGETS appDDLonline
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-# if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/android)
-#     include("D:/SDK/Android/android_openssl/android_openssl.cmake")
-#     add_android_openssl_libraries(appDDLonline)
-# endif()
+if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/android)
+    include("D:/SDK/Android/android_openssl/android_openssl.cmake")
+    add_android_openssl_libraries(appDDLonline)
+endif()
