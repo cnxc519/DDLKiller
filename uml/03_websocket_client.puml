@@ -1,0 +1,41 @@
+@startuml
+title WebSocketClient 类
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+class WebSocketClient <<Singleton>> {
+    - static WebSocketClient *instance
+    - QWebSocket *m_webSocket
+    - bool m_connected
+    - QString m_status
+    - QString m_lastMessage
+    - QString json_to_run
+    - bool fullUpdate
+    + WebSocketClient(QObject *parent = nullptr)
+    + static WebSocketClient *getInstance(QObject *parent = nullptr)
+    + static void destroyInstance()
+    + Q_INVOKABLE void connectToServer(const QString &url)
+    + Q_INVOKABLE void disconnectFromServer()
+    + Q_INVOKABLE void sendMessage(const QString &message)
+    + bool connected() const
+    + QString status() const
+    + QString lastMessage() const
+    - void setConnected(bool connected)
+    - void setStatus(const QString &status)
+}
+
+WebSocketClient --|> QObject
+
+note right of WebSocketClient
+  单例模式
+  WebSocket通信
+  维护连接状态
+  存储待执行的JSON
+  - fullUpdate: 请求全量同步
+  - json_to_run: 待执行操作
+end note
+
+@enduml

@@ -1,0 +1,58 @@
+@startuml
+title 接收服务器消息流程
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam maxMessageSize 150
+
+participant "WebSocketClient" as WS
+participant "Main.qml" as UI
+participant "JsonProcessor" as Proc
+participant "DatabaseManager" as DB
+
+服务器 --> WS: 发送 JSON 消息
+WS -> WS: onTextMessageReceived(json)
+WS -> UI: emit messageReceived(json)
+UI -> Proc: parseAndProcessJson(json)
+Proc -> Proc: 解析 JSON 类型
+
+alt 类型: modification
+    Proc -> Proc: 解析操作 (add/delete/modify)
+    Proc -> DB: processJsonResult(result)
+    DB -> DB: 处理操作
+    DB -> DB: 更新数据库
+    DB -> DB: emit dataChanged()
+    DB --> UI: operationCompleted 信号
+    UI -> UI: refreshData()
+else 类型: full_update_blanket
+    Proc -> Proc: 解析 full_update 内容
+    Proc -> DB: processJsonResult(result)
+    DB -> DB: processFullUpdate()
+    DB -> DB: 合并服务器和本地数据
+    DB -> DB: 更新数据库
+    DB -> DB: emit dataChanged()
+    DB --> UI: operationCompleted 信号
+    UI -> UI: refreshData()
+else 类型: full_update_mix
+    Proc -> Proc: 解析 full_update 内容
+    Proc -> DB: processJsonResult(result)
+    DB -> DB: processFullUpdateNoresponse()
+    DB -> DB: 清空并替换数据
+    DB -> DB: emit replyToServer()
+    DB -> DB: getTodoItemsAsJsonString()
+    DB --> UI: replyToServer 信号
+    UI -> WS: json_to_run = db JSON
+    UI -> WS: sendMessage(json_to_run)
+    WS -> WS: 发送到服务器
+    DB -> DB: resetOfflineFlags()
+    UI -> UI: refreshData()
+else 类型: response
+    Proc -> Proc: 确认响应
+    DB -> DB: 标记项目为已同步
+    DB -> DB: resetOfflineFlags()
+end
+
+WS -> UI: json_to_run = ""
+
+@enduml

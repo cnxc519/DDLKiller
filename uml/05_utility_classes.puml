@@ -1,0 +1,43 @@
+@startuml
+title 工具类
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+class Date {
+    + Date(QObject *parent = nullptr)
+    + Q_INVOKABLE QString getExplicitDate(int year, int month, int day)
+    + Q_INVOKABLE int getmodelindex(int, int, int)
+}
+
+class DataSql {
+    - QSqlDatabase m_db
+    - QSqlQuery m_query
+    + DataSql(QObject *parent = nullptr)
+    + ~DataSql()
+    + Q_INVOKABLE bool initializeDatabase()
+    + Q_INVOKABLE bool executeQuery(const QString &query)
+    + Q_INVOKABLE bool executeQueryWithParams(const QString &query, const QVariantList &params)
+    + Q_INVOKABLE QVariantList getQueryResults()
+}
+
+Date --|> QObject
+DataSql --|> QObject
+
+note right of Date
+  日期工具函数
+  - getExplicitDate: 格式化日期显示
+  - getmodelindex: 获取时间分组索引
+  - 分组: 三天内、两周内、长期
+end note
+
+note right of DataSql
+  SQL查询包装器
+  - executeQuery: 执行SQL
+  - executeQueryWithParams: 参数化查询
+  - getQueryResults: 获取结果
+end note
+
+@enduml

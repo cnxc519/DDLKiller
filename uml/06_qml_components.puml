@@ -1,0 +1,56 @@
+@startuml
+title QML 组件
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+class "Main.qml" as Main {
+    + property var groupModels
+    + property bool dbInitialized
+    + property string dbStatus
+    + property int tempYear, tempMonth, tempDay
+    + property date cDate
+    + property int storedYear, storedMonth, storedDay
+    + property bool isModifying
+    + property string modifyUUID
+    + function refreshData()
+    + function parseDate(dateString)
+    + function loadExample(type)
+}
+
+class "CalendarSelector.qml" as CalendarSelector {
+    + property date selectedDate
+    + property date currentDate
+    + signal dateSelected(date selectedDate)
+}
+
+class "MaskCalender.qml" as MaskCalender {
+    + visible: bool
+}
+
+note right of Main
+  主UI组件
+  三个任务分组:
+  - 三天内
+  - 两周内
+  - 长期
+  操作:
+  - 添加任务
+  - 修改任务
+  - 删除任务
+  - 全量同步
+end note
+
+note right of CalendarSelector
+  日历选择组件
+  发出dateSelected信号
+end note
+
+note right of MaskCalender
+  日历遮罩层
+  阻止背景交互
+end note
+
+@enduml

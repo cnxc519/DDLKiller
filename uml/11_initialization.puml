@@ -1,0 +1,51 @@
+@startuml
+title 应用初始化流程
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam maxMessageSize 150
+
+participant "main.cpp" as Main
+participant "Date" as Date
+participant "JsonGenerator" as Gen
+participant "JsonProcessor" as Proc
+participant "WebSocketClient" as WS
+participant "DatabaseManager" as DB
+participant "QQmlApplicationEngine" as Engine
+
+Main -> Main: 创建 QGuiApplication
+Main -> Date: 创建实例
+Main -> Gen: 创建实例
+Main -> Proc: 创建实例
+Main -> WS: getInstance()
+WS -> WS: 单例构造函数
+Main -> DB: getInstance()
+DB -> DB: 单例构造函数
+Main -> DB: createTable()
+DB -> DB: initializeDatabase()
+DB -> DB: 创建 SQLite 表
+DB --> Main: 成功/失败
+Main -> Engine: 创建 QQmlApplicationEngine
+Main -> Engine: 设置上下文属性
+Main -> Engine: date = &date
+Main -> Engine: jsonGenerator = &jsonGenerator
+Main -> Engine: databaseManager = dbManager
+Main -> Engine: jsonProcessor = jsonProcessor
+Main -> Engine: websocket = webSocketClient
+Main -> Engine: 加载 Main.qml
+Main -> WS: fullUpdate = true
+Main -> WS: connectToServer(url)
+WS -> WS: onConnected()
+WS -> WS: 发送全量更新请求
+Main -> Main: app.exec()
+
+note right of Main
+  应用程序启动
+  初始化所有单例
+  暴露到QML上下文
+  自动连接服务器
+  请求全量同步
+end note
+
+@enduml

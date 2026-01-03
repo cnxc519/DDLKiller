@@ -1,0 +1,45 @@
+@startuml
+title 全量同步流程
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam maxMessageSize 150
+
+actor 用户
+participant "Main.qml" as UI
+participant "WebSocketClient" as WS
+participant "JsonProcessor" as Proc
+participant "DatabaseManager" as DB
+
+用户 -> UI: 点击"全量更新"
+UI -> WS: fullUpdate = true
+UI -> WS: connectToServer(url)
+WS -> WS: onConnected()
+alt 连接成功
+    WS -> WS: 向服务器发送请求
+    服务器 --> WS: 发送 full_update_mix JSON
+    WS -> WS: onTextMessageReceived(json)
+    WS -> UI: emit messageReceived(json)
+    UI -> Proc: parseAndProcessJson(json)
+    Proc -> Proc: 解析 full_update 内容
+    Proc -> DB: processJsonResult(result)
+    DB -> DB: processFullUpdateNoresponse()
+    DB -> DB: clearAllData()
+    DB -> DB: 插入所有服务器数据
+    DB -> DB: emit dataChanged()
+    DB -> DB: emit replyToServer()
+    DB -> DB: getTodoItemsAsJsonString()
+    DB --> UI: replyToServer 信号
+    UI -> WS: json_to_run = db JSON
+    UI -> WS: sendMessage(json_to_run)
+    WS -> WS: 发送到服务器
+    WS -> UI: json_to_run = ""
+    DB -> DB: resetOfflineFlags()
+    UI -> UI: refreshData()
+else 连接失败
+    WS -> WS: onError()
+    WS -> UI: 显示错误信息
+end
+
+@enduml

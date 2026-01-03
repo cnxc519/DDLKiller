@@ -1,0 +1,42 @@
+@startuml
+title JSON 处理类
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+class JsonProcessor {
+    + JsonProcessor(QObject *parent = nullptr)
+    + Q_INVOKABLE QVariantMap parseAndProcessJson(const QString &jsonData)
+    + Q_INVOKABLE QString generateFullUpdateJson(const QVariantList &items)
+    + Q_INVOKABLE QString generateSyncJson(const QVariantMap &syncData)
+    - QVariantList parseFullUpdateContent(const QJsonArray &contentArray)
+    - QVariantMap parseModificationContent(const QJsonObject &contentObject)
+}
+
+class JsonGenerator {
+    + JsonGenerator(QObject *parent = nullptr)
+    + Q_INVOKABLE QString generateAddJson(const QString &name, int year, int month, int day)
+    + Q_INVOKABLE QString generateDeleteJson(const QString &uuid)
+    + Q_INVOKABLE QString generateModifyJson(const QString &uuid, const QString &name, int year, int month, int day)
+}
+
+JsonProcessor --|> QObject
+JsonGenerator --|> QObject
+
+note right of JsonProcessor
+  解析传入的JSON
+  处理全量更新
+  处理修改操作
+  生成同步JSON
+end note
+
+note right of JsonGenerator
+  生成添加JSON
+  生成删除JSON
+  生成修改JSON
+  发出runJson信号
+end note
+
+@enduml

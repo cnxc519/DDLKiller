@@ -1,0 +1,86 @@
+@startuml
+title 系统架构
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+package "应用层" {
+    class "main.cpp" as MainApp
+    class "Main.qml" as UI
+}
+
+package "业务逻辑层" {
+    class DatabaseManager <<Singleton>>
+    class WebSocketClient <<Singleton>>
+    class JsonProcessor
+    class JsonGenerator
+}
+
+package "数据层" {
+    class TodoItem
+    class QSqlDatabase
+}
+
+package "工具层" {
+    class Date
+    class DataSql
+}
+
+package "网络层" {
+    class QWebSocket
+}
+
+package "UI组件" {
+    class CalendarSelector
+    class MaskCalender
+}
+
+MainApp ..> DatabaseManager : 创建
+MainApp ..> WebSocketClient : 创建
+MainApp ..> JsonProcessor : 创建
+MainApp ..> JsonGenerator : 创建
+MainApp ..> Date : 创建
+MainApp --> UI : 加载
+
+UI ..> DatabaseManager : 调用
+UI ..> WebSocketClient : 调用
+UI ..> JsonProcessor : 调用
+UI ..> JsonGenerator : 调用
+UI ..> Date : 调用
+UI --> CalendarSelector : 使用
+UI --> MaskCalender : 使用
+
+WebSocketClient --> QWebSocket : 使用
+DatabaseManager --> QSqlDatabase : 使用
+DatabaseManager *-- TodoItem : 管理
+
+JsonProcessor ..> DatabaseManager : 为其处理
+JsonGenerator ..> WebSocketClient : 为其生成
+
+note right of MainApp
+  应用程序入口
+  初始化所有单例
+  暴露到QML上下文
+end note
+
+note right of UI
+  用户界面
+  三个任务分组
+  添加/修改/删除操作
+end note
+
+note right of DatabaseManager
+  数据库操作
+  离线/在线同步
+  JSON处理
+end note
+
+note right of WebSocketClient
+  网络通信
+  连接管理
+  消息处理
+end note
+
+@enduml

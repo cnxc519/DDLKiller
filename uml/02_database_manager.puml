@@ -1,0 +1,57 @@
+@startuml
+title DatabaseManager 类
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+class DatabaseManager <<Singleton>> {
+    - static DatabaseManager *instance
+    - QSqlDatabase m_database
+    + DatabaseManager(QObject *parent = nullptr)
+    + ~DatabaseManager()
+    + static DatabaseManager *getInstance()
+    + static void destroyInstance()
+    + Q_INVOKABLE bool createTable()
+    + Q_INVOKABLE QVariantList getTodoItems()
+    + Q_INVOKABLE bool processJsonResult(const QVariantMap &jsonResult)
+    + Q_INVOKABLE QVariantMap getSyncData()
+    + Q_INVOKABLE bool markItemAsSynced(const QString &uuid)
+    + Q_INVOKABLE bool resetOfflineFlags()
+    + Q_INVOKABLE QString getTodoItemsAsJsonString()
+    + QJsonObject getTodoItemsAsJson()
+    + void markOnlineAdd(const QString &uuid)
+    + void markOnlineDelete(const QString &uuid)
+    {static} - bool initializeDatabase()
+    - QString generateUuid()
+    - bool clearAllData()
+    - bool insertTodoItem(const QVariantMap &item, bool isOfflineAdd = false)
+    - bool deleteTodoItem(const QString &uuid, bool isOfflineDelete = false)
+    - bool updateTodoItem(const QString &uuid, const QVariantMap &itemData)
+    - bool processFullUpdate(const QVariantList &items)
+    - bool processFullUpdateNoresponse(const QVariantList &items)
+    - bool processAddOperation(const QVariantMap &operationData)
+    - bool processDeleteOperation(const QVariantMap &operationData)
+    - bool processModifyOperation(const QVariantMap &operationData)
+    - bool applyServerChanges(const QVariantList &serverItems)
+    - QSet<QString> getCurrentUuids()
+    - void handleOfflineAdditions(const QSet<QString> &serverUuids)
+    - void handleServerDeletions(const QSet<QString> &serverUuids, const QSet<QString> &currentUuids)
+    - void handleServerAddtions(const QSet<QString> &serverUuids, const QSet<QString> &currentUuids)
+    - void handleDataConflicts(const QVariantList &serverItems)
+}
+
+DatabaseManager --|> QObject
+
+note right of DatabaseManager
+  单例模式
+  管理SQLite数据库
+  处理离线/在线同步
+  处理JSON操作
+  - 全量更新
+  - 添加/删除/修改
+  - 冲突解决
+end note
+
+@enduml

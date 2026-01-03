@@ -1,0 +1,29 @@
+@startuml
+title 数据模型结构
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+struct TodoItem {
+    + QString uuid
+    + QString lastModified
+    + QString title
+    + QString description
+    + QString dueDate
+    + bool completeFlag
+    + bool offlineAdd
+    + bool offlineDelete
+    + TodoItem()
+}
+
+note right of TodoItem
+  待办事项数据结构
+  - uuid: 唯一标识符
+  - lastModified: 时间戳
+  - offlineAdd: 离线添加
+  - offlineDelete: 离线删除
+end note
+
+@enduml

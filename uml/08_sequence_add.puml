@@ -1,0 +1,46 @@
+@startuml
+title 添加任务流程
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam maxMessageSize 150
+
+actor 用户
+participant "Main.qml" as UI
+participant "JsonGenerator" as Gen
+participant "WebSocketClient" as WS
+participant "JsonProcessor" as Proc
+participant "DatabaseManager" as DB
+
+用户 -> UI: 点击"添加事项"
+UI -> UI: 显示输入对话框
+用户 -> UI: 输入名称并选择日期
+用户 -> UI: 点击"添加"
+UI -> Gen: generateAddJson(name, year, month, day)
+Gen -> Gen: 创建JSON，包含uuid和lastModified
+Gen --> UI: emit runJson(json)
+UI -> WS: json_to_run = json
+UI -> WS: connectToServer(url)
+alt 连接成功
+    WS -> WS: onConnected()
+    WS -> Proc: parseAndProcessJson(json)
+    Proc -> Proc: 解析JSON
+    Proc -> DB: processJsonResult(result)
+    DB -> DB: insertTodoItem() 带离线标志
+    DB -> DB: emit dataChanged()
+    DB --> UI: operationCompleted 信号
+    UI -> UI: refreshData()
+    UI -> WS: sendMessage(json)
+    WS -> WS: 发送到服务器
+    WS -> UI: json_to_run = ""
+else 连接失败
+    WS -> WS: onError()
+    DB -> DB: insertTodoItem() 设置offlineAdd=true
+    DB -> DB: emit dataChanged()
+    DB --> UI: operationCompleted 信号
+    UI -> UI: refreshData()
+    WS -> UI: json_to_run = ""
+end
+
+@enduml

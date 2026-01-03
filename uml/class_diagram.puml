@@ -1,0 +1,178 @@
+@startuml DDLKiller Class Diagram
+
+' Style settings
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+
+' ==================== Data Structures ====================
+
+struct TodoItem {
+    + QString uuid
+    + QString lastModified
+    + QString title
+    + QString description
+    + QString dueDate
+    + bool completeFlag
+    + bool offlineAdd
+    + bool offlineDelete
+    + TodoItem()
+}
+
+' ==================== Core C++ Classes ====================
+
+class DatabaseManager <<Singleton>> {
+    - static DatabaseManager *instance
+    - QSqlDatabase m_database
+    + DatabaseManager(QObject *parent = nullptr)
+    + ~DatabaseManager()
+    + static DatabaseManager *getInstance()
+    + static void destroyInstance()
+    + Q_INVOKABLE bool createTable()
+    + Q_INVOKABLE QVariantList getTodoItems()
+    + Q_INVOKABLE bool processJsonResult(const QVariantMap &jsonResult)
+    + Q_INVOKABLE QVariantMap getSyncData()
+    + Q_INVOKABLE bool markItemAsSynced(const QString &uuid)
+    + Q_INVOKABLE bool resetOfflineFlags()
+    + Q_INVOKABLE QString getTodoItemsAsJsonString()
+    + QJsonObject getTodoItemsAsJson()
+    + void markOnlineAdd(const QString &uuid)
+    + void markOnlineDelete(const QString &uuid)
+    {static} - bool initializeDatabase()
+    - QString generateUuid()
+    - bool clearAllData()
+    - bool insertTodoItem(const QVariantMap &item, bool isOfflineAdd = false)
+    - bool deleteTodoItem(const QString &uuid, bool isOfflineDelete = false)
+    - bool updateTodoItem(const QString &uuid, const QVariantMap &itemData)
+    - bool processFullUpdate(const QVariantList &items)
+    - bool processFullUpdateNoresponse(const QVariantList &items)
+    - bool processAddOperation(const QVariantMap &operationData)
+    - bool processDeleteOperation(const QVariantMap &operationData)
+    - bool processModifyOperation(const QVariantMap &operationData)
+    - bool applyServerChanges(const QVariantList &serverItems)
+    - QSet<QString> getCurrentUuids()
+    - void handleOfflineAdditions(const QSet<QString> &serverUuids)
+    - void handleServerDeletions(const QSet<QString> &serverUuids, const QSet<QString> &currentUuids)
+    - void handleServerAddtions(const QSet<QString> &serverUuids, const QSet<QString> &currentUuids)
+    - void handleDataConflicts(const QVariantList &serverItems)
+}
+
+class WebSocketClient <<Singleton>> {
+    - static WebSocketClient *instance
+    - QWebSocket *m_webSocket
+    - bool m_connected
+    - QString m_status
+    - QString m_lastMessage
+    - QString json_to_run
+    - bool fullUpdate
+    + WebSocketClient(QObject *parent = nullptr)
+    + static WebSocketClient *getInstance(QObject *parent = nullptr)
+    + static void destroyInstance()
+    + Q_INVOKABLE void connectToServer(const QString &url)
+    + Q_INVOKABLE void disconnectFromServer()
+    + Q_INVOKABLE void sendMessage(const QString &message)
+    + bool connected() const
+    + QString status() const
+    + QString lastMessage() const
+    - void setConnected(bool connected)
+    - void setStatus(const QString &status)
+}
+
+class JsonProcessor {
+    + JsonProcessor(QObject *parent = nullptr)
+    + Q_INVOKABLE QVariantMap parseAndProcessJson(const QString &jsonData)
+    + Q_INVOKABLE QString generateFullUpdateJson(const QVariantList &items)
+    + Q_INVOKABLE QString generateSyncJson(const QVariantMap &syncData)
+    - QVariantList parseFullUpdateContent(const QJsonArray &contentArray)
+    - QVariantMap parseModificationContent(const QJsonObject &contentObject)
+}
+
+class JsonGenerator {
+    + JsonGenerator(QObject *parent = nullptr)
+    + Q_INVOKABLE QString generateAddJson(const QString &name, int year, int month, int day)
+    + Q_INVOKABLE QString generateDeleteJson(const QString &uuid)
+    + Q_INVOKABLE QString generateModifyJson(const QString &uuid, const QString &name, int year, int month, int day)
+}
+
+class Date {
+    + Date(QObject *parent = nullptr)
+    + Q_INVOKABLE QString getExplicitDate(int year, int month, int day)
+    + Q_INVOKABLE int getmodelindex(int, int, int)
+}
+
+class DataSql {
+    - QSqlDatabase m_db
+    - QSqlQuery m_query
+    + DataSql(QObject *parent = nullptr)
+    + ~DataSql()
+    + Q_INVOKABLE bool initializeDatabase()
+    + Q_INVOKABLE bool executeQuery(const QString &query)
+    + Q_INVOKABLE bool executeQueryWithParams(const QString &query, const QVariantList &params)
+    + Q_INVOKABLE QVariantList getQueryResults()
+}
+
+' ==================== Application Entry Point ====================
+
+class main <<Application>> {
+    + int main(int argc, char *argv[])
+}
+
+' ==================== Relationships ====================
+
+' Composition
+DatabaseManager *-- TodoItem : manages
+WebSocketClient *-- QWebSocket : uses
+DataSql *-- QSqlDatabase : uses
+
+' Associations
+main ..> DatabaseManager : creates & exposes
+main ..> WebSocketClient : creates & exposes
+main ..> JsonProcessor : creates & exposes
+main ..> JsonGenerator : creates & exposes
+main ..> Date : creates & exposes
+
+WebSocketClient ..> JsonProcessor : sends messages to
+JsonProcessor ..> DatabaseManager : processes data for
+JsonGenerator ..> WebSocketClient : generates messages for
+
+' Notes
+note right of DatabaseManager
+  Singleton pattern
+  Manages SQLite database
+  Handles offline/online sync
+  Processes JSON operations
+end note
+
+note right of WebSocketClient
+  Singleton pattern
+  WebSocket communication
+  Maintains connection state
+  Stores pending JSON to run
+end note
+
+note right of JsonProcessor
+  Parses incoming JSON
+  Processes full updates
+  Processes modifications
+  Generates sync JSON
+end note
+
+note right of JsonGenerator
+  Generates add JSON
+  Generates delete JSON
+  Generates modify JSON
+end note
+
+note right of Date
+  Date utility functions
+  Calendar operations
+  Date formatting
+end note
+
+note right of DataSql
+  SQL query wrapper
+  Database initialization
+  Query execution
+end note
+
+@enduml
