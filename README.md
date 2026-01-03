@@ -168,7 +168,7 @@ vcpkg install qt6:x64-linux
 
 ### 2. 获取源码
 ```bash
-git clone https://github.com/your-repo/DDLonline.git
+git clone https://github.com/cnxc519/DDLKiller.git
 cd DDLonline
 git submodule update --init --recursive
 ```
@@ -337,21 +337,6 @@ websocket->connectToServer("ws://your-server.com:8090");
 
 // 或使用安全WebSocket
 websocket->connectToServer("wss://your-server.com:8090");
-```
-
-#### 连接参数配置
-```cpp
-// WebSocketClient.h
-class WebSocketClient : public QObject {
-    // 连接超时设置 (毫秒)
-    static const int CONNECT_TIMEOUT = 5000;
-    
-    // 心跳间隔 (秒)
-    static const int HEARTBEAT_INTERVAL = 30;
-    
-    // 重连次数限制
-    static const int MAX_RETRY_COUNT = 3;
-};
 ```
 
 ### 数据库配置
@@ -1172,25 +1157,6 @@ void TestWebSocketIntegration::testFullSync() {
 }
 ```
 
-#### 3. 性能测试
-```cpp
-// 测试大量数据处理
-void PerformanceTest::testLargeDataset() {
-    QElapsedTimer timer;
-    timer.start();
-    
-    // 插入1000条记录
-    for (int i = 0; i < 1000; ++i) {
-        QVariantMap item;
-        item["title"] = QString("Task %1").arg(i);
-        item["due_date"] = "2025-12-31";
-        dbManager->insertTodoItem(item);
-    }
-    
-    qDebug() << "Insert 1000 items took:" << timer.elapsed() << "ms";
-    QVERIFY(timer.elapsed() < 5000); // 应在5秒内完成
-}
-```
 
 ## 🤝 贡献指南
 
@@ -1280,102 +1246,8 @@ git push origin feature/your-feature-name
 - [ ] 网络通信安全
 - [ ] 数据加密存储
 
-### 发布流程
 
-#### 1. 版本号规范
-```
-主版本号.次版本号.修订号 (MAJOR.MINOR.PATCH)
-- MAJOR: 不兼容的API修改
-- MINOR: 向下兼容的功能性新增
-- PATCH: 向下兼容的问题修正
-```
 
-#### 2. 发布检查清单
-- [ ] 版本号更新
-- [ ] 更新日志完善
-- [ ] 所有测试通过
-- [ ] 文档更新
-- [ ] 性能测试通过
-- [ ] 安全审查完成
 
-#### 3. 发布步骤
-```bash
-# 1. 创建发布标签
-git tag -a v1.2.3 -m "Release version 1.2.3"
-git push origin v1.2.3
-
-# 2. 构建发布包
-./scripts/build_release.sh v1.2.3
-
-# 3. 上传到发布平台
-./scripts/upload_release.sh v1.2.3
-
-# 4. 更新文档
-./scripts/update_docs.sh v1.2.3
-```
-
-## 📄 许可证
-
-本项目采用 MIT License 许可证。
-
-```
-MIT License
-
-Copyright (c) 2025 DDLonline Team
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## 👥 开发团队
-
-### 核心贡献者
-- **项目负责人**: 负责整体架构设计和技术决策
-- **后端开发**: WebSocket通信、数据库设计、同步逻辑
-- **前端开发**: QML界面设计、用户交互、动画效果
-- **测试工程师**: 单元测试、集成测试、性能测试
-- **UI/UX设计师**: 界面设计、用户体验优化
-
-### 特别感谢
-- Qt开发团队提供的优秀框架
-- 开源社区的宝贵建议和贡献
-- 所有测试用户提供的反馈
-
-## 📞 联系方式
-
-### 技术支持
-- **GitHub Issues**: [项目Issues页面](https://github.com/your-repo/DDLonline/issues)
-- **讨论区**: [GitHub Discussions](https://github.com/your-repo/DDLonline/discussions)
-- **邮件支持**: ddlonline@example.com
-
-### 商务合作
-- **商务邮箱**: business@ddlonline.com
-- **合作电话**: +86-xxx-xxxx-xxxx
-
-### 社区
-- **QQ群**: 123456789
-- **微信群**: 扫描二维码加入
-- **Telegram**: @ddl_online_community
-
----
-
-## 🌟 致谢
-
-感谢所有为这个项目做出贡献的开发者、测试人员和用户。您的支持和反馈是我们不断改进的动力！
 
 **DDLonline** - 让待办事项管理更简单，让多端协作更高效！ 🚀
