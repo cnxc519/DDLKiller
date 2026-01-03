@@ -3,12 +3,12 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include <QObject>
+#include <QDebug>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
 #include <QJsonValue>
-#include <QDebug>
+#include <QObject>
 #include <QVariant>
 
 class JsonProcessor : public QObject

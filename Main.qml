@@ -593,10 +593,10 @@ ApplicationWindow {
                         anchors.margins: 12
 
                         // 空Item，用于撑开顶部空间
-                            Item {
-                                width: parent.width
-                                height: 0.5
-                            }
+                        Item {
+                            width: parent.width
+                            height: 0.5
+                        }
                         // Group Title
                         Text {
                             text: title

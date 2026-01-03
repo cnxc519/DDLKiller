@@ -2,9 +2,9 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "Date.h"
-#include "jsonGenerator.h"
 #include "database.h"
 #include "json.h"
+#include "jsonGenerator.h"
 #include "websocketclient.h"
 
 int main(int argc, char *argv[])
@@ -31,20 +31,23 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     //engine.rootContext()->setContextProperty("dataSql",&dataSql);
-    engine.rootContext()->setContextProperty("date",&date);
-    engine.rootContext()->setContextProperty("jsonGenerator",&jsonGenerator);
+    engine.rootContext()->setContextProperty("date", &date);
+    engine.rootContext()->setContextProperty("jsonGenerator", &jsonGenerator);
     engine.rootContext()->setContextProperty("databaseManager", dbManager);
     engine.rootContext()->setContextProperty("jsonProcessor", jsonProcessor);
     engine.rootContext()->setContextProperty("websocket", webSocketClient);
 
-
     const QUrl url(u"qrc:/DDLonline/Main.qml"_qs);
 
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
-                         if (!obj && url == objUrl)
-                             QCoreApplication::exit(-1);
-                     }, Qt::QueuedConnection);
+    QObject::connect(
+        &engine,
+        &QQmlApplicationEngine::objectCreated,
+        &app,
+        [url](QObject *obj, const QUrl &objUrl) {
+            if (!obj && url == objUrl)
+                QCoreApplication::exit(-1);
+        },
+        Qt::QueuedConnection);
 
     QObject::connect(
         &engine,
@@ -55,7 +58,7 @@ int main(int argc, char *argv[])
 
     engine.loadFromModule("DDLonline", "Main");
 
-    webSocketClient->fullUpdate=true;
+    webSocketClient->fullUpdate = true;
     webSocketClient->connectToServer("ws://8.148.4.26:8090");
 
     int result = app.exec();

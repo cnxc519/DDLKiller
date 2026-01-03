@@ -3,8 +3,7 @@
 
 JsonProcessor::JsonProcessor(QObject *parent)
     : QObject(parent)
-{
-}
+{}
 
 QVariantMap JsonProcessor::parseAndProcessJson(const QString &jsonData)
 {
@@ -38,7 +37,6 @@ QVariantMap JsonProcessor::parseAndProcessJson(const QString &jsonData)
     QString type = rootObject["type"].toString();
     result["type"] = type;
 
-
     if (type == "full_update") {
         if (!rootObject.contains("content") || !rootObject["content"].isArray()) {
             result["error"] = "Invalid or missing 'content' array for full_update";
@@ -57,8 +55,7 @@ QVariantMap JsonProcessor::parseAndProcessJson(const QString &jsonData)
         result["operation"] = "full_update";
         result["items"] = items;
         result["message"] = QString("Parsed %1 items for full update").arg(items.size());
-    }
-    else if(type == "full_update_noresponse"){
+    } else if (type == "full_update_noresponse") {
         if (!rootObject.contains("content") || !rootObject["content"].isArray()) {
             result["error"] = "Invalid or missing 'content' array for full_update";
             emit jsonError(result["error"].toString());
@@ -76,8 +73,7 @@ QVariantMap JsonProcessor::parseAndProcessJson(const QString &jsonData)
         result["operation"] = "full_update_noresponse";
         result["items"] = items;
         result["message"] = QString("Parsed %1 items for full update").arg(items.size());
-    }
-    else if (type == "modification") {
+    } else if (type == "modification") {
         if (!rootObject.contains("content") || !rootObject["content"].isObject()) {
             result["error"] = "Invalid or missing 'content' object for modification";
             emit jsonError(result["error"].toString());
@@ -94,41 +90,39 @@ QVariantMap JsonProcessor::parseAndProcessJson(const QString &jsonData)
         result["success"] = true;
         result["operation"] = modificationResult["operation"];
         result["data"] = modificationResult;
-        result["message"] = QString("Parsed %1 operation").arg(modificationResult["operation"].toString());
-    }
-    else if (type == "sync") {
+        result["message"] = QString("Parsed %1 operation")
+                                .arg(modificationResult["operation"].toString());
+    } else if (type == "sync") {
         // 处理同步数据
         result["success"] = true;
         result["operation"] = "sync";
         result["data"] = rootObject.toVariantMap();
         result["message"] = "Sync data received";
-    }
-    else if(type == "response"){
+    } else if (type == "response") {
         if (!rootObject.contains("content") || !rootObject["content"].isObject()) {
             result["error"] = "Invalid or missing 'content' object for modification";
             emit jsonError(result["error"].toString());
             return result;
         }
-        if (!rootObject.value("content").toObject().contains("operation") || rootObject.value("content").toObject()["operation"].isObject()){
-
+        if (!rootObject.value("content").toObject().contains("operation")
+            || rootObject.value("content").toObject()["operation"].isObject()) {
             return result;
         }
         QJsonValue value = rootObject.value("content").toObject().value("operation");
         QString opr = value.toString();
-        if(opr=="add"){
-            QString uuid=rootObject.value("content").toObject().value("operation").toString();
+        if (opr == "add") {
+            QString uuid = rootObject.value("content").toObject().value("operation").toString();
 
             //将这个uuid的offline_add设为false
-             DatabaseManager::getInstance()->markOnlineAdd(uuid);
+            DatabaseManager::getInstance()->markOnlineAdd(uuid);
         }
-        if(opr=="delete"){
-            QString uuid=rootObject.value("content").toObject().value("operation").toString();
+        if (opr == "delete") {
+            QString uuid = rootObject.value("content").toObject().value("operation").toString();
 
             //将这个uuid执行真删除
-             DatabaseManager::getInstance()->markOnlineDelete(uuid);
+            DatabaseManager::getInstance()->markOnlineDelete(uuid);
         }
-    }
-    else {
+    } else {
         result["error"] = "Unknown type: " + type;
         emit jsonError(result["error"].toString());
         return result;
@@ -147,12 +141,18 @@ QVariantList JsonProcessor::parseFullUpdateContent(const QJsonArray &contentArra
             QJsonObject itemObj = value.toObject();
             QVariantMap item;
 
-            if (itemObj.contains("uuid")) item["uuid"] = itemObj["uuid"].toString();
-            if (itemObj.contains("last_modified")) item["last_modified"] = itemObj["last_modified"].toString();
-            if (itemObj.contains("title")) item["title"] = itemObj["title"].toString();
-            if (itemObj.contains("description")) item["description"] = itemObj["description"].toString();
-            if (itemObj.contains("due_date")) item["due_date"] = itemObj["due_date"].toString();
-            if (itemObj.contains("complete_flag")) item["complete_flag"] = itemObj["complete_flag"].toBool();
+            if (itemObj.contains("uuid"))
+                item["uuid"] = itemObj["uuid"].toString();
+            if (itemObj.contains("last_modified"))
+                item["last_modified"] = itemObj["last_modified"].toString();
+            if (itemObj.contains("title"))
+                item["title"] = itemObj["title"].toString();
+            if (itemObj.contains("description"))
+                item["description"] = itemObj["description"].toString();
+            if (itemObj.contains("due_date"))
+                item["due_date"] = itemObj["due_date"].toString();
+            if (itemObj.contains("complete_flag"))
+                item["complete_flag"] = itemObj["complete_flag"].toBool();
 
             // 确保必需字段存在
             if (item.contains("uuid") && item.contains("title")) {
@@ -183,23 +183,27 @@ QVariantMap JsonProcessor::parseModificationContent(const QJsonObject &contentOb
         }
 
         QVariantMap item;
-        if (contentObject.contains("uuid")) item["uuid"] = contentObject["uuid"].toString();
-        if (contentObject.contains("last_modified")) item["last_modified"] = contentObject["last_modified"].toString();
-        if (contentObject.contains("title")) item["title"] = contentObject["title"].toString();
-        if (contentObject.contains("description")) item["description"] = contentObject["description"].toString();
-        if (contentObject.contains("due_date")) item["due_date"] = contentObject["due_date"].toString();
-        if (contentObject.contains("complete_flag")) item["complete_flag"] = contentObject["complete_flag"].toBool();
+        if (contentObject.contains("uuid"))
+            item["uuid"] = contentObject["uuid"].toString();
+        if (contentObject.contains("last_modified"))
+            item["last_modified"] = contentObject["last_modified"].toString();
+        if (contentObject.contains("title"))
+            item["title"] = contentObject["title"].toString();
+        if (contentObject.contains("description"))
+            item["description"] = contentObject["description"].toString();
+        if (contentObject.contains("due_date"))
+            item["due_date"] = contentObject["due_date"].toString();
+        if (contentObject.contains("complete_flag"))
+            item["complete_flag"] = contentObject["complete_flag"].toBool();
 
         result["item"] = item;
-    }
-    else if (operation == "delete") {
+    } else if (operation == "delete") {
         if (!contentObject.contains("target_uuid")) {
             result["error"] = "Missing 'target_uuid' field for delete operation";
             return result;
         }
         result["target_uuid"] = contentObject["target_uuid"].toString();
-    }
-    else if (operation == "modify") {
+    } else if (operation == "modify") {
         if (!contentObject.contains("target_uuid")) {
             result["error"] = "Missing 'target_uuid' field for modify operation";
             return result;
@@ -208,15 +212,19 @@ QVariantMap JsonProcessor::parseModificationContent(const QJsonObject &contentOb
         result["target_uuid"] = contentObject["target_uuid"].toString();
 
         QVariantMap item;
-        if (contentObject.contains("last_modified")) item["last_modified"] = contentObject["last_modified"].toString();
-        if (contentObject.contains("title")) item["title"] = contentObject["title"].toString();
-        if (contentObject.contains("description")) item["description"] = contentObject["description"].toString();
-        if (contentObject.contains("due_date")) item["due_date"] = contentObject["due_date"].toString();
-        if (contentObject.contains("complete_flag")) item["complete_flag"] = contentObject["complete_flag"].toBool();
+        if (contentObject.contains("last_modified"))
+            item["last_modified"] = contentObject["last_modified"].toString();
+        if (contentObject.contains("title"))
+            item["title"] = contentObject["title"].toString();
+        if (contentObject.contains("description"))
+            item["description"] = contentObject["description"].toString();
+        if (contentObject.contains("due_date"))
+            item["due_date"] = contentObject["due_date"].toString();
+        if (contentObject.contains("complete_flag"))
+            item["complete_flag"] = contentObject["complete_flag"].toBool();
 
         result["item"] = item;
-    }
-    else {
+    } else {
         result["error"] = "Unknown operation: " + operation;
         return result;
     }

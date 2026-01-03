@@ -6,9 +6,9 @@
 //任何full_update后都代表连接着,可以执行reset
 
 // 单例实例初始化
-DatabaseManager* DatabaseManager::instance = nullptr;
+DatabaseManager *DatabaseManager::instance = nullptr;
 
-DatabaseManager* DatabaseManager::getInstance()
+DatabaseManager *DatabaseManager::getInstance()
 {
     if (!instance) {
         instance = new DatabaseManager();
@@ -25,7 +25,7 @@ void DatabaseManager::destroyInstance()
 }
 
 DatabaseManager::DatabaseManager(QObject *parent)
-    : QObject(parent)//, m_isOnline(true) // 默认在线
+    : QObject(parent) //, m_isOnline(true) // 默认在线
 {
     initializeDatabase();
 }
@@ -151,7 +151,6 @@ QString DatabaseManager::getTodoItemsAsJsonString()
 
 QVariantList DatabaseManager::getTodoItems()
 {
-
     //WebSocketClient* webSocketClient = WebSocketClient::getInstance();
     QVariantList items;
 
@@ -162,7 +161,9 @@ QVariantList DatabaseManager::getTodoItems()
 
     // 在线状态下不显示标记为离线删除的项目
     //webSocketClient->connected() ?
-    QString querySql =   "SELECT uuid, last_modified, title, description, due_date, complete_flag, offline_add, offline_delete FROM todo_items WHERE offline_delete = 0 ORDER BY due_date";
+    QString querySql
+        = "SELECT uuid, last_modified, title, description, due_date, complete_flag, offline_add, "
+          "offline_delete FROM todo_items WHERE offline_delete = 0 ORDER BY due_date";
     //"SELECT uuid, last_modified, title, description, due_date, complete_flag, offline_add, offline_delete FROM todo_items ORDER BY due_date";
 
     QSqlQuery query(querySql);
@@ -186,7 +187,8 @@ QVariantList DatabaseManager::getTodoItems()
 bool DatabaseManager::processJsonResult(const QVariantMap &jsonResult)
 {
     if (!jsonResult.contains("success") || !jsonResult["success"].toBool()) {
-        QString error = jsonResult.contains("error") ? jsonResult["error"].toString() : "Unknown error";
+        QString error = jsonResult.contains("error") ? jsonResult["error"].toString()
+                                                     : "Unknown error";
         emit operationCompleted("parse", false, "JSON parsing failed: " + error);
         return false;
     }
@@ -198,33 +200,26 @@ bool DatabaseManager::processJsonResult(const QVariantMap &jsonResult)
     if (operation == "full_update") {
         QVariantList items = jsonResult["items"].toList();
         success = processFullUpdate(items);
-        message = success ?
-                      QString("Full update completed with %1 items").arg(items.size()) :
-                      "Full update failed";
-    }
-    else if (operation=="full_update_noresponse"){
+        message = success ? QString("Full update completed with %1 items").arg(items.size())
+                          : "Full update failed";
+    } else if (operation == "full_update_noresponse") {
         QVariantList items = jsonResult["items"].toList();
         success = processFullUpdateNoresponse(items);
-        message = success ?
-                      QString("Full update completed with %1 items").arg(items.size()) :
-                      "Full update failed";
-    }
-    else if (operation == "add") {
+        message = success ? QString("Full update completed with %1 items").arg(items.size())
+                          : "Full update failed";
+    } else if (operation == "add") {
         QVariantMap operationData = jsonResult["data"].toMap();
         success = processAddOperation(operationData);
         message = success ? "Add operation completed" : "Add operation failed";
-    }
-    else if (operation == "delete") {
+    } else if (operation == "delete") {
         QVariantMap operationData = jsonResult["data"].toMap();
         success = processDeleteOperation(operationData);
         message = success ? "Delete operation completed" : "Delete operation failed";
-    }
-    else if (operation == "modify") {
+    } else if (operation == "modify") {
         QVariantMap operationData = jsonResult["data"].toMap();
         success = processModifyOperation(operationData);
         message = success ? "Modify operation completed" : "Modify operation failed";
-    }
-    else {
+    } else {
         message = "Unknown operation: " + operation;
     }
 
@@ -267,14 +262,11 @@ bool DatabaseManager::applyServerChanges(const QVariantList &serverItems)
     // 处理服务器添加的项目
     //handleServerDeletions(serverUuids, currentUuids);
 
-
-
     // 新增：处理服务器没有但本地有的数据（需要删除）
     handleServerDeletions(serverUuids, currentUuids);
 
     // 处理离线添加的项目
     handleOfflineAdditions(serverUuids);
-
 
     //目前问题:服务器没有的但是本地有的,没有正确删除,已解决
     //emit dataChanged();
@@ -284,7 +276,8 @@ bool DatabaseManager::applyServerChanges(const QVariantList &serverItems)
     return true;
 }
 
-void DatabaseManager::handleServerDeletions(const QSet<QString> &serverUuids, const QSet<QString> &currentUuids)
+void DatabaseManager::handleServerDeletions(const QSet<QString> &serverUuids,
+                                            const QSet<QString> &currentUuids)
 {
     // 查找本地有但服务器没有的项目
     QSet<QString> localOnlyUuids = currentUuids - serverUuids;
@@ -344,7 +337,8 @@ void DatabaseManager::handleOfflineAdditions(const QSet<QString> &serverUuids)
     qInfo() << "Found" << offlineAddUuids.size() << "offline additions to sync";
 }
 
-void DatabaseManager::handleServerAddtions(const QSet<QString> &serverUuids, const QSet<QString> &currentUuids)
+void DatabaseManager::handleServerAddtions(const QSet<QString> &serverUuids,
+                                           const QSet<QString> &currentUuids)
 {
     // 查找服务器有但本地没有的项目
     QSet<QString> serverOnlyUuids = serverUuids - currentUuids;
@@ -382,7 +376,8 @@ void DatabaseManager::handleDataConflicts(const QVariantList &serverItems)
                 updateQuery.addBindValue(uuid);
 
                 if (!updateQuery.exec()) {
-                    qWarning() << "Failed to restore deleted item:" << updateQuery.lastError().text();
+                    qWarning() << "Failed to restore deleted item:"
+                               << updateQuery.lastError().text();
                 }
             }
             // 比较最后修改时间，使用最新的数据
@@ -402,7 +397,8 @@ void DatabaseManager::handleDataConflicts(const QVariantList &serverItems)
                 updateQuery.addBindValue(uuid);
 
                 if (!updateQuery.exec()) {
-                    qWarning() << "Failed to update item with server data:" << updateQuery.lastError().text();
+                    qWarning() << "Failed to update item with server data:"
+                               << updateQuery.lastError().text();
                 }
             }
         } else {
@@ -437,14 +433,18 @@ bool DatabaseManager::processAddOperation(const QVariantMap &operationData)
 {
     //WebSocketClient* webSocketClient = WebSocketClient::getInstance();
     QVariantMap item = operationData["item"].toMap();
-    return insertTodoItem(item, 1); // 离线状态下添加标记为离线添加!webSocketClient->connected(),默认离线,收到发送成功信号后在线
+    return insertTodoItem(
+        item,
+        1); // 离线状态下添加标记为离线添加!webSocketClient->connected(),默认离线,收到发送成功信号后在线
 }
 
 bool DatabaseManager::processDeleteOperation(const QVariantMap &operationData)
 {
     //WebSocketClient* webSocketClient = WebSocketClient::getInstance();
     QString targetId = operationData["target_uuid"].toString();
-    return deleteTodoItem(targetId, 1); // 离线状态下删除标记为离线删除!webSocketClient->connected(),默认离线,收到发送成功信号后在线
+    return deleteTodoItem(
+        targetId,
+        1); // 离线状态下删除标记为离线删除!webSocketClient->connected(),默认离线,收到发送成功信号后在线
 }
 
 bool DatabaseManager::processModifyOperation(const QVariantMap &operationData)
@@ -466,7 +466,6 @@ bool DatabaseManager::processFullUpdateNoresponse(const QVariantList &items)
             allSuccess = false;
         }
     }
-
 
     return allSuccess;
 }
@@ -496,8 +495,10 @@ bool DatabaseManager::insertTodoItem(const QVariantMap &item, bool isOfflineAdd)
     }
 
     QString uuid = item["uuid"].toString();
-    QString lastModified = item.contains("last_modified") && !item["last_modified"].toString().isEmpty() ?
-                               item["last_modified"].toString() : generateUuid();
+    QString lastModified = item.contains("last_modified")
+                                   && !item["last_modified"].toString().isEmpty()
+                               ? item["last_modified"].toString()
+                               : generateUuid();
     QString title = item["title"].toString();
     QString description = item["description"].toString();
     QString dueDate = item["due_date"].toString();
@@ -544,7 +545,8 @@ bool DatabaseManager::deleteTodoItem(const QString &uuid, bool isOfflineDelete)
         query.addBindValue(uuid);
 
         if (!query.exec() || !query.next()) {
-            qWarning() << "Failed to query todo item offline_add status:" << query.lastError().text();
+            qWarning() << "Failed to query todo item offline_add status:"
+                       << query.lastError().text();
             return false;
         }
 
@@ -556,7 +558,8 @@ bool DatabaseManager::deleteTodoItem(const QString &uuid, bool isOfflineDelete)
             query.addBindValue(uuid);
 
             if (!query.exec()) {
-                qWarning() << "Failed to mark todo item as offline deleted:" << query.lastError().text();
+                qWarning() << "Failed to mark todo item as offline deleted:"
+                           << query.lastError().text();
                 return false;
             }
 
@@ -573,7 +576,7 @@ bool DatabaseManager::deleteTodoItem(const QString &uuid, bool isOfflineDelete)
 
             qInfo() << "Permanently deleted todo item:" << uuid;
         }
-    }else {
+    } else {
         // 在线删除：实际删除
         QSqlQuery query;
         query.prepare("DELETE FROM todo_items WHERE uuid = ?");
@@ -598,8 +601,10 @@ bool DatabaseManager::updateTodoItem(const QString &uuid, const QVariantMap &ite
         return false;
     }
 
-    QString lastModified = itemData.contains("last_modified") && !itemData["last_modified"].toString().isEmpty() ?
-                               itemData["last_modified"].toString() : generateUuid();
+    QString lastModified = itemData.contains("last_modified")
+                                   && !itemData["last_modified"].toString().isEmpty()
+                               ? itemData["last_modified"].toString()
+                               : generateUuid();
     QString title = itemData["title"].toString();
     QString description = itemData["description"].toString();
     QString dueDate = itemData["due_date"].toString();
@@ -640,7 +645,8 @@ QVariantMap DatabaseManager::getSyncData()
     }
 
     // 获取需要同步的离线添加项目
-    QSqlQuery addQuery("SELECT uuid, last_modified, title, description, due_date, complete_flag FROM todo_items WHERE offline_add = 1");
+    QSqlQuery addQuery("SELECT uuid, last_modified, title, description, due_date, complete_flag "
+                       "FROM todo_items WHERE offline_add = 1");
     while (addQuery.next()) {
         QVariantMap item;
         item["uuid"] = addQuery.value(0).toString();
@@ -705,7 +711,8 @@ bool DatabaseManager::resetOfflineFlags()
     return true;
 }
 //若服务器收到更新,则将服务器收到的改为online
-void DatabaseManager::markOnlineAdd(const QString &uuid){
+void DatabaseManager::markOnlineAdd(const QString &uuid)
+{
     QSqlQuery query;
 
     query.prepare("UPDATE todo_items SET offline_add = 0 WHERE uuid = ?");
@@ -714,11 +721,11 @@ void DatabaseManager::markOnlineAdd(const QString &uuid){
 
     if (!query.exec()) {
         qWarning() << "Failed to markOnlineAdd:" << query.lastError().text();
-    }
-    else qDebug()<<"Success to markOnlineAdd";
-
+    } else
+        qDebug() << "Success to markOnlineAdd";
 }
-void DatabaseManager::markOnlineDelete(const QString &uuid){
+void DatabaseManager::markOnlineDelete(const QString &uuid)
+{
     QSqlQuery query;
 
     query.prepare("DELETE FROM todo_items WHERE uuid = ?");
@@ -727,8 +734,8 @@ void DatabaseManager::markOnlineDelete(const QString &uuid){
 
     if (!query.exec()) {
         qWarning() << "Failed to markOnlineDelete:" << query.lastError().text();
-    }
-    else qDebug()<<"Success to markOnlineDelete";
+    } else
+        qDebug() << "Success to markOnlineDelete";
 }
 
 QString DatabaseManager::generateUuid()

@@ -20,7 +20,7 @@ qt_add_qml_module(appDDLonline
     QML_FILES
         Main.qml
         SOURCES Date.h
-        SOURCES DataSql.h
+        #SOURCES DataSql.h
         SOURCES Date.cpp
         SOURCES
         SOURCES

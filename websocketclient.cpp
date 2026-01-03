@@ -2,9 +2,9 @@
 #include <QDebug>
 
 // 静态成员初始化
-WebSocketClient* WebSocketClient::instance = nullptr;
+WebSocketClient *WebSocketClient::instance = nullptr;
 
-WebSocketClient* WebSocketClient::getInstance(QObject* parent)
+WebSocketClient *WebSocketClient::getInstance(QObject *parent)
 {
     if (!instance) {
         instance = new WebSocketClient(parent);
@@ -28,8 +28,14 @@ WebSocketClient::WebSocketClient(QObject *parent)
 {
     connect(m_webSocket, &QWebSocket::connected, this, &WebSocketClient::onConnected);
     connect(m_webSocket, &QWebSocket::disconnected, this, &WebSocketClient::onDisconnected);
-    connect(m_webSocket, &QWebSocket::textMessageReceived, this, &WebSocketClient::onTextMessageReceived);
-    connect(m_webSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this, &WebSocketClient::onError);
+    connect(m_webSocket,
+            &QWebSocket::textMessageReceived,
+            this,
+            &WebSocketClient::onTextMessageReceived);
+    connect(m_webSocket,
+            QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
+            this,
+            &WebSocketClient::onError);
 }
 
 // 以下保持原有函数不变
@@ -56,10 +62,10 @@ void WebSocketClient::onConnected()
     //每次重连都进行full_update
     //qDebug()<<json_to_run;
     setConnected(true);
-    qDebug()<<"发送信息成功";
+    qDebug() << "发送信息成功";
     sendMessage("{\"type\": \"full_update_request\"}");
-    json_to_run="";
-    fullUpdate=false;
+    json_to_run = "";
+    fullUpdate = false;
     setStatus("Connected");
     qDebug() << "WebSocket connected";
 }

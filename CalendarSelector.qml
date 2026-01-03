@@ -209,21 +209,21 @@ Rectangle{
                     height: (parent.height - 15) / 6
 
                     property bool isCurrentMonth: index >= calendar.firstDayIndex &&
-                                                index < calendar.firstDayIndex + calendar.daysInMonth
+                                                  index < calendar.firstDayIndex + calendar.daysInMonth
                     property bool isSelected: {
                         if (!isCurrentMonth) return false
 
                         var day = index - calendar.firstDayIndex + 1
                         var itemDate = new Date(calendar.currentDate.getFullYear(),
-                                              calendar.currentDate.getMonth(),
-                                              day)
+                                                calendar.currentDate.getMonth(),
+                                                day)
 
                         return itemDate.getTime() === root.selectedDate.getTime()
                     }
                     property bool isToday: isCurrentMonth &&
-                                         (index - calendar.firstDayIndex + 1) === new Date().getDate() &&
-                                         calendar.currentDate.getMonth() === new Date().getMonth() &&
-                                         calendar.currentDate.getFullYear() === new Date().getFullYear()
+                                           (index - calendar.firstDayIndex + 1) === new Date().getDate() &&
+                                           calendar.currentDate.getMonth() === new Date().getMonth() &&
+                                           calendar.currentDate.getFullYear() === new Date().getFullYear()
                     property int dayNumber: {
                         if (index < calendar.firstDayIndex) {
                             return calendar.daysInPreviousMonth - calendar.firstDayIndex + index + 1
@@ -285,8 +285,8 @@ Rectangle{
                             if (dayItem.isCurrentMonth) {
                                 var day = index - calendar.firstDayIndex + 1
                                 var newDate = new Date(calendar.currentDate.getFullYear(),
-                                                      calendar.currentDate.getMonth(),
-                                                      day)
+                                                       calendar.currentDate.getMonth(),
+                                                       day)
                                 root.selectedDate = newDate
                                 root.dateSelected(newDate)
                             }

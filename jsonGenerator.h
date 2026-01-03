@@ -3,28 +3,29 @@
 #ifndef JSONGENERATOR_H
 #define JSONGENERATOR_H
 
-#include <QObject>
-#include <QObject>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QDebug>
-#include <QStandardPaths>
-#include <QDir>
-#include <QVariant>
 #include <QDateTime>
+#include <QDebug>
+#include <QDir>
+#include <QObject>
 #include <QSet>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QStandardPaths>
+#include <QVariant>
 
-class JsonGenerator:public QObject{
+class JsonGenerator : public QObject
+{
     Q_OBJECT
 public:
-    explicit JsonGenerator(QObject *parent=nullptr);
+    explicit JsonGenerator(QObject *parent = nullptr);
 
-    Q_INVOKABLE QString generateAddJson(const QString &name,int year,int month,int day);
+    Q_INVOKABLE QString generateAddJson(const QString &name, int year, int month, int day);
 
     Q_INVOKABLE QString generateDeleteJson(const QString &uuid);
 
-    Q_INVOKABLE QString generateModifyJson(const QString &uuid,const QString &name,int year,int month,int day);
+    Q_INVOKABLE QString
+    generateModifyJson(const QString &uuid, const QString &name, int year, int month, int day);
 signals:
     void runJson(const QString &jtr);
 
@@ -33,7 +34,7 @@ signals:
     // {/"type/":/"modification/",/"content/": {/"operation/":/"modify/",/"target_id/":/"20251129001659123/",/"last_modified/":/"20240620093000123/",/"title/":/"Modified Title/",/"description/":/"/",/"due_date/":/"2024-12-31/",/"complete_flag/": false}}
 };
 
-QString formatDate(int year,int month,int day);
+QString formatDate(int year, int month, int day);
 
 QString generateUuid();
 

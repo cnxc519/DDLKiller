@@ -1,34 +1,39 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <QObject>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QDebug>
-#include <QStandardPaths>
-#include <QDir>
-#include <QVariant>
 #include <QDateTime>
-#include <QSet>
+#include <QDebug>
+#include <QDir>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
 #include <QJsonValue>
+#include <QObject>
+#include <QSet>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QStandardPaths>
+#include <QVariant>
 
 //记得给一个连接按钮
 
-struct TodoItem {
+struct TodoItem
+{
     QString uuid;
     QString lastModified;
     QString title;
     QString description;
     QString dueDate;
     bool completeFlag;
-    bool offlineAdd;      // 新增：标记是否为离线添加
-    bool offlineDelete;   // 新增：标记是否为离线删除
+    bool offlineAdd;    // 新增：标记是否为离线添加
+    bool offlineDelete; // 新增：标记是否为离线删除
 
-    TodoItem() : completeFlag(false), offlineAdd(false), offlineDelete(false) {}
+    TodoItem()
+        : completeFlag(false)
+        , offlineAdd(false)
+        , offlineDelete(false)
+    {}
 };
 
 class DatabaseManager : public QObject
@@ -37,14 +42,14 @@ class DatabaseManager : public QObject
     //Q_PROPERTY(bool isOnline READ isOnline WRITE setIsOnline NOTIFY isOnlineChanged)
 
 private:
-    static DatabaseManager* instance;
+    static DatabaseManager *instance;
     explicit DatabaseManager(QObject *parent = nullptr);
 
 public:
     ~DatabaseManager();
 
     // 单例模式相关
-    static DatabaseManager* getInstance();
+    static DatabaseManager *getInstance();
     static void destroyInstance();
 
     Q_INVOKABLE bool createTable();
