@@ -18,31 +18,31 @@ qt_add_qml_module(appDDLonline
     URI DDLonline
     VERSION 1.0
     QML_FILES
-        Main.qml
-        SOURCES Date.h
-        #SOURCES DataSql.h
-        SOURCES Date.cpp
-        SOURCES
-        SOURCES
-        QML_FILES CalendarSelector.qml
-        QML_FILES MaskCalender.qml
-        SOURCES jsonGenerator.h
-        SOURCES jsonGenerator.cpp
-        SOURCES database.h
-        SOURCES database.cpp
-        SOURCES json.cpp
-        SOURCES websocketclient.h
-        SOURCES json.h
-        SOURCES websocketclient.cpp
-        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
-        RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
+    Main.qml
+    SOURCES Date.h
+    #SOURCES DataSql.h
+    SOURCES Date.cpp
+    SOURCES
+    SOURCES
+    QML_FILES CalendarSelector.qml
+    QML_FILES MaskCalender.qml
+    SOURCES jsonGenerator.h
+    SOURCES jsonGenerator.cpp
+    SOURCES database.h
+    SOURCES database.cpp
+    SOURCES json.cpp
+    SOURCES websocketclient.h
+    SOURCES json.h
+    SOURCES websocketclient.cpp
+    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
+    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 set_target_properties(appDDLonline PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appDDLonline
+    #    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appDDLonline
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
@@ -58,7 +58,7 @@ target_link_libraries(appDDLonline
 
 if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/android)
     set_target_properties(appDDLonline PROPERTIES
-       QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
     )
 endif()
 
